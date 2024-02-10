@@ -32,6 +32,7 @@ CREATE TABLE organizations (
   commitment_level org_commitment DEFAULT 'NONE',
   state org_state DEFAULT 'PENDING',
   joinable BOOLEAN DEFAULT true,
+  join_instructions TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
