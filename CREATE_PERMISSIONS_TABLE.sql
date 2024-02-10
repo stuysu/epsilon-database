@@ -39,4 +39,4 @@ USING (
       AND permission = 'ADMIN'
     )
   )
-)
+);
