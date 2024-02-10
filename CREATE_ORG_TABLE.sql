@@ -29,10 +29,11 @@ CREATE TABLE organizations (
   uniqueness TEXT NULL,
   meeting_schedule TEXT NULL,
   meeting_days VARCHAR(255) NULL,
-  commitment_level org_commitment DEFAULT 'NONE' ,
+  commitment_level org_commitment DEFAULT 'NONE',
+  state org_state DEFAULT 'PENDING',
+  joinable BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  state org_state DEFAULT 'PENDING'
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 create extension if not exists moddatetime schema extensions;
