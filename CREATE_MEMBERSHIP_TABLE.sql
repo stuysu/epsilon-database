@@ -51,13 +51,13 @@ WITH CHECK(
     FROM users AS u
     WHERE (
       (u.email = (auth.jwt() ->> 'email')) 
-      AND (memberships.user_id = u.id)
+      AND (user_id = u.id)
     )
   )) 
   AND (EXISTS ( 
     SELECT 1
     FROM organizations AS o
-    WHERE (o.id = memberships.organization_id)
+    WHERE (o.id = organization_id)
   )) 
   AND (active = false) 
   AND (role = 'MEMBER') 
@@ -71,12 +71,13 @@ TO authenticated
 WITH CHECK(
   EXISTS ( 
     SELECT 1
-    FROM memberships AS m
-    INNER JOIN users AS u ON ((m.user_id = u.id))
+    FROM users AS u
+    INNER JOIN memberships AS m ON ((m.user_id = u.id))
     WHERE (
-      (m.organization_id = m.organization_id)
+      (m.organization_id = memberships.organization_id)
       AND (m.role = 'ADMIN') 
       AND (u.email = (auth.jwt() ->> 'email'))
+      AND (m.id = memberships.id)
     )
   )
 );
@@ -88,12 +89,13 @@ TO authenticated
 USING (
   EXISTS ( 
     SELECT 1
-    FROM memberships AS m
-    INNER JOIN users AS u ON ((m.user_id = u.id))
+    FROM users AS u
+    INNER JOIN memberships AS m ON ((m.user_id = u.id))
     WHERE (
-      (m.organization_id = m.organization_id)
+      (m.organization_id = memberships.organization_id)
       AND (m.role = 'ADMIN') 
       AND (u.email = (auth.jwt() ->> 'email'))
+      AND (m.id = memberships.id)
     )
   )
 );
