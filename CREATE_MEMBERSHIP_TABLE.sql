@@ -104,7 +104,7 @@ USING (
   )
 );
 
-CREATE POLICY "Enable regular membership update access to organization creator only"
+CREATE POLICY "Enable all membership update access to organization creator only"
 ON public.memberships
 FOR UPDATE
 TO authenticated
@@ -122,7 +122,7 @@ WITH CHECK(
   )
 );
 
-CREATE POLICY "Enable regular membership delete access to organization creator only"
+CREATE POLICY "Enable all membership delete access to organization creator only"
 ON public.memberships
 FOR DELETE
 TO authenticated
