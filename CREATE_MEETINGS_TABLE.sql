@@ -1,6 +1,7 @@
 CREATE TABLE meetings (
   id SERIAL PRIMARY KEY,
   organization_id INT,
+  room_id INT,
   is_public BOOLEAN DEFAULT true,
   title VARCHAR(500),
   description TEXT,
@@ -8,7 +9,8 @@ CREATE TABLE meetings (
   end_time TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organization_id) REFERENCES organizations(id)
+  FOREIGN KEY (organization_id) REFERENCES organizations(id),
+  FOREIGN KEY(room_id) REFERENCES rooms(id)
 );
 
 create extension if not exists moddatetime schema extensions;
