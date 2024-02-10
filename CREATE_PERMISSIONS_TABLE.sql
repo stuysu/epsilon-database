@@ -38,7 +38,7 @@ USING (
       AND u.id = user_id
     )
   )
-)
+);
 
 CREATE POLICY "Enable all access to site admins"
 ON public.permissions
