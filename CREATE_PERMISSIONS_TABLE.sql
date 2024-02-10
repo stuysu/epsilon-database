@@ -11,10 +11,10 @@ CREATE TABLE permissions (
   id SERIAL PRIMARY KEY,
   user_id INT,
   permission site_perms,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  CONSTRAINT no_duplicate_permissions UNIQUE(user_id, permission),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT no_duplicate_permissions UNIQUE(user_id, permission)
 );
 
 create extension if not exists moddatetime schema extensions;
@@ -24,3 +24,19 @@ create trigger handle_updated_at before update on permissions
   for each row execute procedure moddatetime (updated_at);
 
 ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable all access to site admins"
+ON public.permissions
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND u.id = user_id
+      AND permission = 'ADMIN'
+    )
+  )
+)
