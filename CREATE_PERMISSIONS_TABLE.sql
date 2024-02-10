@@ -25,6 +25,21 @@ create trigger handle_updated_at before update on permissions
 
 ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "Enable read access to anyone with permissions"
+ON public.permissions
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND u.id = user_id
+    )
+  )
+)
+
 CREATE POLICY "Enable all access to site admins"
 ON public.permissions
 FOR ALL
@@ -40,3 +55,5 @@ USING (
     )
   )
 );
+
+
