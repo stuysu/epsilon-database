@@ -68,7 +68,7 @@ CREATE POLICY "Enable members except creator to delete their own memberships"
 ON public.memberships
 FOR DELETE
 TO authenticated
-WITH CHECK(
+USING (
   EXISTS (
     SELECT 1
     FROM users as u
