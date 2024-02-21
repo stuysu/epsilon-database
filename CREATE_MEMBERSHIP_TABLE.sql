@@ -64,6 +64,22 @@ WITH CHECK(
   AND (role_name = NULL)
 );
 
+CREATE POLICY "Enable members except creator to delete their own memberships"
+ON public.memberships
+FOR DELETE
+TO authenticated
+WITH CHECK(
+  EXISTS (
+    SELECT 1
+    FROM users as u
+    WHERE (
+      (u.email = (auth.jwt() ->> 'email'))
+      AND (memberships.user_id = u.id)
+    )
+  )
+  AND (memberships.role != 'CREATOR')
+);
+
 CREATE POLICY "Enable regular membership update access to organization admins only"
 ON public.memberships
 FOR UPDATE
