@@ -61,7 +61,7 @@ WITH CHECK(
   )) 
   AND (active = false) 
   AND (role = 'MEMBER') 
-  AND (role_name = NULL)
+  AND role_name IS NULL
 );
 
 CREATE POLICY "Enable members except creator to delete their own memberships"
