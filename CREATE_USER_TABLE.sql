@@ -20,17 +20,9 @@ create trigger handle_updated_at before update on users
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
-/*
-create or replace function auth.email() returns text as $$
-  select nullif(current_setting('request.jwt.claim.email', true), '')::text;
-$$ language sql;
-*/
-
 -- POLICIES
 CREATE POLICY "Enable read access to authenticated users only"
 ON public.users
 FOR SELECT 
 TO authenticated
-USING (
-  email = auth.jwt() ->> 'email'
-);
+USING (true);
