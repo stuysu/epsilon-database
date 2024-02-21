@@ -74,30 +74,58 @@ USING (
     FROM users as u
     WHERE (
       (u.email = (auth.jwt() ->> 'email'))
-      AND (memberships.user_id = u.id)
+      AND (user_id = u.id)
     )
   )
-  AND (memberships.role != 'CREATOR')
+  AND (role != 'CREATOR')
 );
+
+CREATE OR REPLACE FUNCTION public.get_user_admin_organizations()
+RETURNS SETOF INT
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+stable
+AS $$
+  SELECT organization_id
+  FROM memberships
+  INNER JOIN users ON (memberships.user_id = users.id)
+  WHERE (
+    (users.email = auth.jwt() ->> 'email')
+    AND (memberships.role = 'ADMIN')
+  )
+$$;
+
+CREATE OR REPLACE FUNCTION public.get_user_creator_organizations()
+RETURNS SETOF INT
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+stable
+AS $$
+  SELECT organization_id
+  FROM memberships
+  INNER JOIN users ON (memberships.user_id = users.id)
+  WHERE (
+    (users.email = auth.jwt() ->> 'email')
+    AND (memberships.role = 'CREATOR')
+  )
+$$;
 
 CREATE POLICY "Enable regular membership update access to organization admins only"
 ON public.memberships
 FOR UPDATE
 TO authenticated
-WITH CHECK(
-  EXISTS ( 
-    SELECT 1
-    FROM users AS u
-    INNER JOIN memberships AS m ON ((m.user_id = u.id))
-    WHERE (
-      (m.organization_id = memberships.organization_id)
-      AND (m.role = 'ADMIN') 
-      AND (u.email = (auth.jwt() ->> 'email'))
-      AND (m.id = memberships.id)
-      AND (memberships.role != 'ADMIN')
-      AND (memberships.role != 'CREATOR')
-    )
+USING (
+  organization_id IN (
+    SELECT public.get_user_admin_organizations()
   )
+  AND role != 'ADMIN'
+  AND role != 'CREATOR'
+)
+WITH CHECK(
+  role != 'ADMIN'
+  AND role != 'CREATOR'
 );
 
 CREATE POLICY "Enable regular membership delete access to organization admins only"
@@ -105,36 +133,20 @@ ON public.memberships
 FOR DELETE
 TO authenticated
 USING (
-  EXISTS ( 
-    SELECT 1
-    FROM users AS u
-    INNER JOIN memberships AS m ON ((m.user_id = u.id))
-    WHERE (
-      (m.organization_id = memberships.organization_id)
-      AND (m.role = 'ADMIN') 
-      AND (u.email = (auth.jwt() ->> 'email'))
-      AND (m.id = memberships.id)
-      AND (memberships.role != 'ADMIN')
-      AND (memberships.role != 'CREATOR')
-    )
+  organization_id IN (
+    SELECT public.get_user_admin_organizations()
   )
+  AND role != 'ADMIN'
+  AND role != 'CREATOR'
 );
 
 CREATE POLICY "Enable all membership update access to organization creator only"
 ON public.memberships
 FOR UPDATE
 TO authenticated
-WITH CHECK(
-  EXISTS ( 
-    SELECT 1
-    FROM users AS u
-    INNER JOIN memberships AS m ON ((m.user_id = u.id))
-    WHERE (
-      (m.organization_id = memberships.organization_id)
-      AND (m.role = 'CREATOR') 
-      AND (u.email = (auth.jwt() ->> 'email'))
-      AND (m.id = memberships.id)
-    )
+USING (
+  organization_id IN (
+    SELECT public.get_user_creator_organizations()
   )
 );
 
@@ -143,16 +155,8 @@ ON public.memberships
 FOR DELETE
 TO authenticated
 USING (
-  EXISTS ( 
-    SELECT 1
-    FROM users AS u
-    INNER JOIN memberships AS m ON ((m.user_id = u.id))
-    WHERE (
-      (m.organization_id = memberships.organization_id)
-      AND (m.role = 'CREATOR') 
-      AND (u.email = (auth.jwt() ->> 'email'))
-      AND (m.id = memberships.id)
-      AND (memberships.role != 'CREATOR') -- can't kick creators out
-    )
+  organization_id IN (
+    SELECT public.get_user_creator_organizations()
   )
+  AND role != 'CREATOR'
 );
