@@ -43,3 +43,12 @@ VALUES
     (SELECT id FROM users WHERE email='rsim40@stuy.edu'),
     'ADMIN'
   );
+
+INSERT INTO posts
+  (organization_id, title, description)
+VALUES
+  (
+    (SELECT id FROM organizations WHERE name='SUIT'),
+    'First post!',
+    'This is our first post just letting yall know that more are coming!'
+  );
