@@ -1,12 +1,12 @@
 CREATE TABLE meetings (
   id SERIAL PRIMARY KEY,
-  organization_id INT,
+  organization_id INT NOT NULL,
   room_id INT,
-  is_public BOOLEAN DEFAULT true,
-  title VARCHAR(500),
-  description TEXT,
-  start_time TIMESTAMP,
-  end_time TIMESTAMP,
+  is_public BOOLEAN DEFAULT true NOT NULL,
+  title VARCHAR(500) NOT NULL,
+  description TEXT NOT NULL,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organization_id) REFERENCES organizations(id),
@@ -48,6 +48,40 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND m.organization_id = organization_id
+    )
+  )
+);
+
+CREATE POLICY "Enable insert access to admins of organization"
+ON public.meetings
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users as u
+    INNER JOIN memberships as m ON (u.id = m.user_id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.organization_id = organization_id
+      AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
+    )
+  )
+);
+
+CREATE POLICY "Enable delete access to admins of organization"
+ON public.meetings
+FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users as u
+    INNER JOIN memberships as m ON (u.id = m.user_id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.organization_id = organization_id
+      AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
 );
