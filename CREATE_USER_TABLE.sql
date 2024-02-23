@@ -3,11 +3,11 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
-  email TEXT UNIQUE, -- REFERENCES auth.users(email) ON DELETE CASCADE <- supabase doesn't support this
+  email TEXT UNIQUE NOT NULL, -- REFERENCES auth.users(email) ON DELETE CASCADE <- supabase doesn't support this
   grad_year INT NULL,
   picture VARCHAR(255) NULL, -- server should generate a default pfp
-  is_faculty BOOLEAN DEFAULT false,
-  active BOOLEAN DEFAULT true,
+  is_faculty BOOLEAN DEFAULT false NOT NULL,
+  active BOOLEAN DEFAULT true NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
