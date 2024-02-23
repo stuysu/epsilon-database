@@ -26,3 +26,34 @@ ON public.users
 FOR SELECT 
 TO authenticated
 USING (true);
+
+CREATE POLICY "Enable all access to site admins"
+ON public.users
+FOR ALL
+TO authenticated
+USING (
+  email = auth.jwt() ->> 'email'
+  AND EXISTS (
+    SELECT 1
+    FROM permissions
+    WHERE (
+      ( -- roles here
+        id = permissions.user_id
+        AND permissions.permission = 'ADMIN'
+      )
+    )
+  )
+)
+WITH CHECK (
+  email = auth.jwt() ->> 'email'
+  AND EXISTS (
+    SELECT 1
+    FROM permissions
+    WHERE (
+      ( -- roles here
+        id = permissions.user_id
+        AND permissions.permission = 'ADMIN'
+      )
+    )
+  )
+);
