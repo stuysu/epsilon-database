@@ -85,3 +85,32 @@ USING (
     )
   )
 );
+
+CREATE POLICY "Enable update access to admins of organization"
+ON public.meetings
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users as u
+    INNER JOIN memberships as m ON (u.id = m.user_id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.organization_id = organization_id
+      AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
+    )
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users as u
+    INNER JOIN memberships as m ON (u.id = m.user_id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.organization_id = organization_id
+      AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
+    )
+  )
+);
