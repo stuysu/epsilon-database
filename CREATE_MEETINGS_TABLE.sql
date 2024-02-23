@@ -1,7 +1,7 @@
 CREATE TABLE meetings (
   id SERIAL PRIMARY KEY,
   organization_id INT NOT NULL,
-  room_id INT,
+  room_id INT, /* KEEP THIS NULLABLE, NULL = VIRTUAL ROOMS */
   is_public BOOLEAN DEFAULT true NOT NULL,
   title VARCHAR(500) NOT NULL,
   description TEXT NOT NULL,
