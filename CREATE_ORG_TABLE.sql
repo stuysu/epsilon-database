@@ -53,3 +53,45 @@ ON public.organizations
 FOR SELECT USING (
   true
 );
+
+CREATE POLICY "Allow authenticated users to create pending organizations"
+ON public.organizations
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    WHERE (u.email = (auth.jwt() ->> 'email'))
+  )
+  AND state = 'PENDING'
+);
+
+CREATE POLICY "Allow authenticated users to update pending organizations"
+ON public.organizations
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    INNER JOIN memberships as m ON (m.user_id = u.id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.role = 'CREATOR'
+      AND organizations.id = m.organization_id
+    )
+  )
+  AND state = 'PENDING'
+);
+
+CREATE POLICY "Allow authenticated users to delete their own organization"
+ON public.organizations
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    INNER JOIN memberships as m ON (m.user_id = u.id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.role = 'CREATOR'
+      AND organizations.id = m.organization_id
+    )
+  )
+);
