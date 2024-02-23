@@ -114,3 +114,35 @@ WITH CHECK (
     )
   )
 );
+
+CREATE POLICY "Enable all access to site admins"
+ON public.organizations
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1
+    FROM permissions as p
+    INNER JOIN users as u ON (p.user_id = u.id)
+    WHERE (
+      u.email = auth.jwt() ->> 'email'
+      AND ( -- roles here
+        p.permission = 'ADMIN'
+      )
+    )
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM permissions as p
+    INNER JOIN users as u ON (p.user_id = u.id)
+    WHERE (
+      u.email = auth.jwt() ->> 'email'
+      AND ( -- roles here
+        p.permission = 'ADMIN'
+      )
+    )
+  )
+);
+
