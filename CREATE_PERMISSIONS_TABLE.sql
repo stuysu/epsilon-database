@@ -54,6 +54,17 @@ USING (
       AND permission = 'ADMIN'
     )
   )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND u.id = user_id
+      AND permission = 'ADMIN'
+    )
+  )
 );
 
 
