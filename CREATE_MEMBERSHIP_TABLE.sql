@@ -9,11 +9,11 @@ END $$;
 
 CREATE TABLE memberships (
   id SERIAL PRIMARY KEY,
-  organization_id INT,
-  user_id INT,
-  role org_role DEFAULT 'MEMBER',
+  organization_id INT NOT NULL,
+  user_id INT NOT NULL,
+  role org_role DEFAULT 'MEMBER' NOT NULL,
   role_name VARCHAR(255),
-  active BOOLEAN DEFAULT false,
+  active BOOLEAN DEFAULT false NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organization_id) REFERENCES organizations(id),
