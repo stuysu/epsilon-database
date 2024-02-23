@@ -1,8 +1,8 @@
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
-  organization_id INT,
-  title TEXT,
-  description TEXT,
+  organization_id INT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organization_id) REFERENCES organizations(id)
