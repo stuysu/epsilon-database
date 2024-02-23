@@ -124,7 +124,10 @@ USING (
   AND role != 'CREATOR'
 )
 WITH CHECK(
-  role != 'ADMIN'
+  organization_id IN (
+    SELECT public.get_user_admin_organizations()
+  )
+  AND role != 'ADMIN'
   AND role != 'CREATOR'
 );
 
@@ -145,6 +148,11 @@ ON public.memberships
 FOR UPDATE
 TO authenticated
 USING (
+  organization_id IN (
+    SELECT public.get_user_creator_organizations()
+  )
+)
+WITH CHECK (
   organization_id IN (
     SELECT public.get_user_creator_organizations()
   )
