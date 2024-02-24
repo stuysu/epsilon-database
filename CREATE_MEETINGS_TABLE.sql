@@ -116,7 +116,7 @@ WITH CHECK (
 );
 
 CREATE POLICY "Enable all access to site admins"
-ON public.organizations
+ON public.meetings
 FOR ALL
 TO authenticated
 USING (
