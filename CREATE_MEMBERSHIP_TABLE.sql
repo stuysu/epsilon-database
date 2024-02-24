@@ -57,20 +57,13 @@ WITH CHECK(
   AND (EXISTS ( 
     SELECT 1
     FROM organizations AS o
-    WHERE (o.id = organization_id)
+    WHERE (
+      o.id = organization_id
+    )
   ))
-  AND (
-    (
-      NOT EXISTS (
-        memberships.organization_id = organization_id
-      )
-    )
-    OR (
-      (active = false) 
-      AND (role = 'MEMBER') 
-      AND role_name IS NULL
-    )
-  )
+  AND (active = false) 
+  AND (role = 'MEMBER') 
+  AND role_name IS NULL
 );
 
 CREATE POLICY "Enable members except creator to delete their own memberships"
