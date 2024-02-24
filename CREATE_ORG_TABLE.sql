@@ -30,6 +30,7 @@ CREATE TABLE organizations (
   meeting_schedule TEXT NULL,
   meeting_days VARCHAR(255) NULL,
   commitment_level org_commitment DEFAULT 'NONE',
+  keywords TEXT NULL,
   state org_state DEFAULT 'PENDING',
   joinable BOOLEAN DEFAULT true,
   join_instructions TEXT NULL,
