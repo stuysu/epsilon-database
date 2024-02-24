@@ -54,10 +54,12 @@ BEGIN
     (user_id, organization_id, role, active)
   VALUES
     (new.creator_id, new.id, 'CREATOR', true);
+  
+  RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 
-create trigger create_creator_membership after update on organizations
+create trigger create_creator_membership after insert on organizations
   for each row execute procedure add_creator();
 
 -- should always enable RLS for every table, even if it is public. This gives full control to policies.
