@@ -27,33 +27,33 @@ FOR SELECT
 TO authenticated
 USING (true);
 
+CREATE OR REPLACE FUNCTION public.is_admin(id INT)
+RETURNS BOOLEAN 
+LANGUAGE plpgsql
+SECURITY definer
+SET search_path = public
+stable
+AS $$
+BEGIN
+  PERFORM
+  FROM public.permissions
+  WHERE (
+    user_id = id
+    AND permission = 'ADMIN'
+  );
+  RETURN FOUND;
+END;
+$$;
+
 CREATE POLICY "Enable all access to site admins"
 ON public.users
 FOR ALL
 TO authenticated
 USING (
   email = auth.jwt() ->> 'email'
-  AND EXISTS (
-    SELECT 1
-    FROM permissions
-    WHERE (
-      ( -- roles here
-        id = permissions.user_id
-        AND permissions.permission = 'ADMIN'
-      )
-    )
-  )
+  AND public.is_admin(id)
 )
 WITH CHECK (
   email = auth.jwt() ->> 'email'
-  AND EXISTS (
-    SELECT 1
-    FROM permissions
-    WHERE (
-      ( -- roles here
-        id = permissions.user_id
-        AND permissions.permission = 'ADMIN'
-      )
-    )
-  )
+  AND public.is_admin(id)
 );
