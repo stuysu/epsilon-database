@@ -26,6 +26,8 @@ create extension if not exists moddatetime schema extensions;
 create trigger handle_updated_at before update on organizationEdits
   for each row execute procedure moddatetime (updated_at);
 
+ALTER TABLE organizationEdits ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY "Allow organization admins all access to their organizationEdits"
 ON public.organizationEdits
 FOR ALL
