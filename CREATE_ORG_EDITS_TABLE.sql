@@ -1,6 +1,6 @@
 /* NULL means no update, admin client can skip over fields with value of null */
 /* if organizationEdit for org exists, then any updated fields will update that organizationEdit, else a new one is created */
-CREATE TABLE organizationEdits (
+CREATE TABLE organizationedits (
   id SERIAL PRIMARY KEY,
   organization_id INT UNIQUE NOT NULL,
   name VARCHAR(255) UNIQUE NULL,
@@ -26,10 +26,10 @@ create extension if not exists moddatetime schema extensions;
 create trigger handle_updated_at before update on organizationEdits
   for each row execute procedure moddatetime (updated_at);
 
-ALTER TABLE organizationEdits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizationedits ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow organization admins all access to their organizationEdits"
-ON public.organizationEdits
+CREATE POLICY "Allow organization admins all access to their organizationedits"
+ON public.organizationedits
 FOR ALL
 TO authenticated
 USING (
@@ -58,7 +58,7 @@ WITH CHECK (
 );
 
 CREATE POLICY "Enable all access to site admins"
-ON public.organizationEdits
+ON public.organizationedits
 FOR ALL
 TO authenticated
 USING (
