@@ -61,10 +61,8 @@ ON public.users
 FOR ALL
 TO authenticated
 USING (
-  email = auth.jwt() ->> 'email'
-  AND public.is_admin(id)
+  public.is_admin(id)
 )
 WITH CHECK (
-  email = auth.jwt() ->> 'email'
-  AND public.is_admin(id)
+  public.is_admin(id)
 );
