@@ -28,11 +28,11 @@ USING (
   )
 );
 
-CREATE POLICY "Enable insert access to organization admins only"
+CREATE POLICY "Enable all access to organization admins only"
 ON public.posts
-FOR INSERT
+FOR ALL
 TO authenticated
-WITH CHECK (
+USING (
   EXISTS (
     SELECT 1
     FROM users AS u
@@ -43,13 +43,8 @@ WITH CHECK (
       AND (m.organization_id = organization_id)
     )
   )
-);
-
-CREATE POLICY "Enable delete access to organization admins only"
-ON public.posts
-FOR DELETE
-TO authenticated
-USING (
+)
+WITH CHECK (
   EXISTS (
     SELECT 1
     FROM users AS u
