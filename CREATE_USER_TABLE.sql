@@ -27,7 +27,7 @@ FOR SELECT
 TO authenticated
 USING (true);
 
-CREATE OR REPLACE FUNCTION public.is_admin(id INT)
+CREATE OR REPLACE FUNCTION public.is_admin(u_id INT)
 RETURNS BOOLEAN 
 LANGUAGE plpgsql
 SECURITY definer
@@ -38,7 +38,7 @@ BEGIN
   PERFORM
   FROM public.permissions
   WHERE (
-    user_id = id
+    user_id = u_id
     AND permission = 'ADMIN'
   );
   RETURN FOUND;
