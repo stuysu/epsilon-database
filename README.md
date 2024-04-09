@@ -16,6 +16,8 @@ This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was dele
 
 - this should be simpler, finish it, run it once, and never need to touch certain files ever again
 
+- in the future, manage database through javascript ORM
+
 # order of running files (some depend on others)
 
 CREATE_USER_TABLE.sql
