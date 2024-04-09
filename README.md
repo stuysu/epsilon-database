@@ -23,11 +23,21 @@ This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was dele
 # order of running files (some depend on others)
 
 CREATE_USER_TABLE.sql
+
 CREATE_ORG_TABLE.sql
+
 CREATE_PERMISSIONS_TABLE.sql
+
 CREATE_ROOMS_TABLE.sql
+
 CREATE_MEMBERSHIP_TABLE.sql
+
 CREATE_MEETINGS_TABLE.sql
+
 CREATE_ORG_POLICY.sql
+
 CREATE_POSTS_TABLE.sql
+
 CREATE_ORG_EDITS_TABLE.sql
+
+DATABASE_FUNC_PERMS.sql
