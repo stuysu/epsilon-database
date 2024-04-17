@@ -34,6 +34,7 @@ CREATE TABLE organizations (
   keywords TEXT NULL,
   tags TEXT NULL,
   returning BOOLEAN DEFAULT false,
+  returning_info TEXT NULL,
   state org_state DEFAULT 'PENDING',
   joinable BOOLEAN DEFAULT true,
   join_instructions TEXT NULL,
