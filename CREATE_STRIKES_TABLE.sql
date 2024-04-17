@@ -5,7 +5,7 @@ CREATE TABLE strikes (
   reason TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organization_id) REFERENCES organizations(id),
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) on delete cascade,
   FOREIGN KEY (admin_id) REFERENCES users(id)
 );
 
