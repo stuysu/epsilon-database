@@ -9,7 +9,7 @@ CREATE TABLE meetings (
   end_time TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organization_id) REFERENCES organizations(id),
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) on delete cascade,
   FOREIGN KEY(room_id) REFERENCES rooms(id)
 );
 
