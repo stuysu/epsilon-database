@@ -33,7 +33,7 @@ CREATE TABLE organizations (
   commitment_level org_commitment DEFAULT 'NONE',
   keywords TEXT NULL,
   tags TEXT NULL,
-  returning BOOLEAN DEFAULT false,
+  is_returning BOOLEAN DEFAULT false,
   returning_info TEXT NULL,
   state org_state DEFAULT 'PENDING',
   joinable BOOLEAN DEFAULT true,
