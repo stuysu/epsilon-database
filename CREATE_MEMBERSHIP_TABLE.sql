@@ -16,7 +16,7 @@ CREATE TABLE memberships (
   active BOOLEAN DEFAULT false NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (organization_id) REFERENCES organizations(id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   CONSTRAINT no_duplicate_joins UNIQUE(organization_id, user_id)
 );
