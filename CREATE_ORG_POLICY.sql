@@ -1,5 +1,6 @@
 CREATE POLICY "Allow authenticated users to create pending organizations"
 ON public.organizations
+FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1
@@ -11,6 +12,7 @@ WITH CHECK (
 
 CREATE POLICY "Allow authenticated users to update pending organizations"
 ON public.organizations
+FOR UPDATE
 WITH CHECK (
   EXISTS (
     SELECT 1
@@ -27,6 +29,7 @@ WITH CHECK (
 
 CREATE POLICY "Allow authenticated users to delete their own organization"
 ON public.organizations
+FOR DELETE
 USING (
   EXISTS (
     SELECT 1
