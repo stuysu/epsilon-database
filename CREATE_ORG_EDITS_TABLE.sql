@@ -17,7 +17,7 @@ CREATE TABLE organizationedits (
   keywords TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organization_id) REFERENCES organizations(id)
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) on delete cascade
 );
 
 create extension if not exists moddatetime schema extensions;
