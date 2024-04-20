@@ -22,6 +22,7 @@ CREATE TABLE organizations (
   creator_id INT NOT NULL,
   name VARCHAR(255) UNIQUE NOT NULL,
   url VARCHAR(255) UNIQUE NOT NULL,
+  socials TEXT NULL,
   picture VARCHAR(255) NULL,
   mission TEXT NULL,
   purpose TEXT NULL,
