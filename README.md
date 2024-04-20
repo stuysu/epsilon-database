@@ -18,6 +18,10 @@ This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was dele
 
 - in the future, manage database through javascript ORM
 
+# create buckets
+
+- public-files (make it public)
+
 # order of running files (some depend on others)
 
 CREATE_USER_TABLE.sql
