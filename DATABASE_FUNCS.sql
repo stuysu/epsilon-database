@@ -21,19 +21,20 @@ AS $$
   )
 $$;
 
-CREATE OR REPLACE FUNCTION get_random_organizations(seed_value INT, start_range INT, end_range INT)
+CREATE OR REPLACE FUNCTION get_random_organizations(seed FLOAT, query_offset INT, query_limit INT)
 RETURNS SETOF organizations
 security invoker
 set search_path = public
 stable
 AS $$
 BEGIN
-    RETURN QUERY 
+    PERFORM setseed(seed);
+
+    RETURN QUERY
     SELECT * 
-    FROM (
-        SELECT *, ROW_NUMBER() OVER (ORDER BY RANDOM(seed_value)) AS row_num
-        FROM organizations
-    ) AS subquery
-    WHERE row_num BETWEEN start_range AND end_range;
+    FROM organizations
+    ORDER BY random()
+    LIMIT query_limit
+    OFFSET query_offset;
 END;
 $$ LANGUAGE plpgsql;
