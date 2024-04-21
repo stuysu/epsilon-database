@@ -20,3 +20,20 @@ AS $$
     )
   )
 $$;
+
+CREATE OR REPLACE FUNCTION get_random_organizations(seed_value INT, start_range INT, end_range INT)
+RETURNS SETOF organizations
+security invoker
+set search_path = public
+stable
+AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT * 
+    FROM (
+        SELECT *, ROW_NUMBER() OVER (ORDER BY RANDOM(seed_value)) AS row_num
+        FROM organizations
+    ) AS subquery
+    WHERE row_num BETWEEN start_range AND end_range;
+END;
+$$ LANGUAGE plpgsql;
