@@ -38,3 +38,18 @@ BEGIN
     OFFSET query_offset;
 END;
 $$ LANGUAGE plpgsql;
+
+create or replace function update_profile_picture(profile_url TEXT)
+returns boolean
+language plpgsql
+security definer
+set search_path = 'public'
+AS $$
+BEGIN
+  UPDATE users
+    SET picture = profile_url
+  WHERE users.email = auth.jwt() ->> 'email';
+
+  RETURN FOUND;
+END;
+$$;
