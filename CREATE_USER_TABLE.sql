@@ -27,17 +27,6 @@ FOR SELECT
 TO authenticated
 USING (true);
 
-CREATE POLICY "Allow verified users to update their profiles"
-ON public.users
-FOR UPDATE
-TO authenticated
-USING (
-  email = auth.jwt() ->> 'email'
-)
-WITH CHECK (
-  email = auth.jwt() ->> 'email'
-);
-
 CREATE OR REPLACE FUNCTION public.is_admin(u_id INT)
 RETURNS BOOLEAN 
 LANGUAGE plpgsql
