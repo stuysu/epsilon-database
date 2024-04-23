@@ -49,3 +49,24 @@ DATABASE_FUNCS.sql
 DATABASE_FUNC_PERMS.sql
 
 STORAGE_PERMS.sql
+
+# supabase env
+
+- DASHBORD_USERNAME <- set for supabase dashboard sign in
+- DASHBOARD_PASSWORD
+- JWT_SECRET <- create one from supabase website (they have a convenient ui for it)
+- ANON_KEY <- use secret to make this from supabase site (update frontend with this anon key or else there will be errors)
+- SERVICE_ROLE_KEY <- use secret to make this from supabase site
+
+## Google sign ins
+- set google auth settings to allow sign in with google
+- ENABLE_GOOGLE_SIGNUP=true
+- GOOGLE_CLIENT_ID=
+- GOOGLE_CLIENT_SECRET=
+
+## Sending Emails
+- NODEMAILER_EMAIL=
+- NODEMAILER_PASSWORD=
+- NODEMAILER_HOST=
+- NODEMAILER_PORT=
+- NODEMAILER_SECURE=
