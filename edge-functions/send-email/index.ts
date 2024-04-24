@@ -89,13 +89,11 @@ Deno.serve(async (req : Request) => {
     if (!user) {
         return new Response("Failed to fetch user.", { status: 500 });
     }
-    
-    return createBreakpoint(`This the id ${user.id}`);
 
     /* check if user is a verified user */
     const { data: verifiedUsers, error: verifiedUsersError } = await supabaseClient.from('users')
-        .select('id')
-        .eq('id', user.id);
+        .select('*')
+        .eq('email', user.email);
     
     if (verifiedUsersError) {
         return new Response("Failed to fetch users associated email.", { status: 500 });
@@ -105,25 +103,25 @@ Deno.serve(async (req : Request) => {
         return new Response("User is unauthorized.", { status: 401 });
     }
 
+    const siteUser = verifiedUsers[0];
+
     const { data: permissions, error: permissionsError } = await supabaseClient
         .from('permissions')
         .select(`
             permission
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', siteUser.id);
 
     if (permissionsError) {
         return new Response("Failed to fetch user permissions.", { status: 500 })
     }
     
     let isAdmin = false;
-    permissions.map(p => {
+    (permissions || []).map(p => {
         if (p.permission === 'ADMIN') {
             isAdmin = true;
         }
     });
-
-    
 
     if (!isAdmin && content_type === 'CUSTOM') {
         return new Response("Invalid permissions for custom emails.", { status: 401 })
@@ -137,7 +135,7 @@ Deno.serve(async (req : Request) => {
                 .select(`
                     id
                 `)
-                .eq('user_id', user.id)
+                .eq('user_id', siteUser.id)
                 .in('role', ['ADMIN', 'CREATOR'])
                 .eq('organization_id', Number(recipient_address));
             if (orgError) {
@@ -152,7 +150,7 @@ Deno.serve(async (req : Request) => {
             const { data: organizations, error: orgError } = await supabaseClient
                 .from('memberships')
                 .select('*, users!inner(*)')
-                .eq('user_id', user.id)
+                .eq('user_id', siteUser.id)
                 .eq('users.email', recipient_address)
                 .in('role', ['ADMIN', 'CREATOR']);
             if (orgError) {
@@ -172,7 +170,7 @@ Deno.serve(async (req : Request) => {
     } else if (content_type === 'TEMPLATE') {
         body = tempTemplates[content_body];
         content_parameters?.map((arg, i) => {
-            body = body.replace(`\${ARG${i}}`, arg);
+            body = body.replace(`\${ARG${i+1}}`, arg);
         });
     } else {
         return new Response("Invalid content type.", { status: 400 });
@@ -207,7 +205,7 @@ Deno.serve(async (req : Request) => {
                     from: Deno.env.get('NODEMAILER_FROM')!,
                     to: emailAddress,
                     subject: content_title,
-                    text: content_body,
+                    text: body,
                 }, (error : Error) => {
                     if (error) {
                         return reject(error)
