@@ -117,6 +117,22 @@ Deno.serve(async (req : Request) => {
     if (permissionsError) {
         return new Response("Failed to fetch user permissions.", { status: 500 })
     }
+
+    /* If recipient is an individual, check if that person is within our system. Only allow inter-system messages */
+    if (recipient_type === 'INDIVIDUAL') {
+        const { data: validRecipient, error: validRecipientError } = await supabaseClient
+            .from('users')
+            .select(`id`)
+            .eq('email', recipient_address);
+        
+        if (validRecipientError) {
+            return new Response("Failed to fetch recipient user.", { status: 500 });
+        }
+
+        if (!validRecipient || !validRecipient.length) {
+            return new Response("Recipient is not a valid user.", { status: 401 });
+        }
+    }
     
     /* check if user has an admin role */
     let isAdmin = false;
@@ -131,36 +147,55 @@ Deno.serve(async (req : Request) => {
     }
 
     if (!isAdmin) {
+        const { data: adminOrgs, error: adminOrgsError } = await supabaseClient
+            .from('memberships')
+            .select(`
+                id,
+                organization_id
+            `)
+            .eq('user_id', siteUser.id)
+            .in('role', ['ADMIN', 'CREATOR']);
+        
+        if (adminOrgsError) {
+            return new Response("Failed to fetch user organizations.", { status: 500 });
+        }
+
+        const adminOrgIds : number[] = adminOrgs.map(o => o.organization_id);
+
         if (recipient_type === 'ORGANIZATION') {
             /* check if user is an organization admin of the organization they are sending emails to. If not, no email access. */
-            const { data: organizations, error: orgError } = await supabaseClient
-                .from('memberships')
-                .select(`
-                    id
-                `)
-                .eq('user_id', siteUser.id)
-                .in('role', ['ADMIN', 'CREATOR'])
-                .eq('organization_id', Number(recipient_address));
-            if (orgError) {
-                return new Response("Failed to fetch user organizations.", { status: 500 })
-            }
-
-            if (!organizations || !organizations.length) {
+            if (!adminOrgIds.includes(Number(recipient_address))) {
                 return new Response("Invalid permissions for sending emails.", { status: 401 })
             }
         } else {
             /* Can only use api to email people in the same club (even individuals) */
-            const { data: organizations, error: orgError } = await supabaseClient
+            type ctyp = { // correct type
+                id: number,
+                organization_id: number,
+                users: {
+                    email: string
+                }
+            }
+
+            /* if recipient is in a club that the sender is an admin in, able to send */
+            const { data: recipientMemberships, error: rmError } = await supabaseClient
                 .from('memberships')
-                .select('*, users!inner(*)')
-                .eq('user_id', siteUser.id)
+                .select(`
+                    id,
+                    organization_id,
+                    users!inner (
+                        email
+                    )
+                `)
                 .eq('users.email', recipient_address)
-                .in('role', ['ADMIN', 'CREATOR']);
-            if (orgError) {
+                .in('organization_id', adminOrgIds)
+                .returns<ctyp[]>();
+
+            if (rmError) {
                 return new Response("Failed to fetch user organizations.", { status: 500 })
             }
 
-            if (!organizations || !organizations.length) {
+            if (!recipientMemberships || !recipientMemberships.length) {
                 return new Response("Invalid permissions for sending emails.", { status: 401 })
             }
         }
@@ -213,8 +248,6 @@ Deno.serve(async (req : Request) => {
             if (member.active && member.users.active && !member.users.is_faculty) recipients.push(member.users.email)
         });
     }
-    
-    
 
     for (const emailAddress of recipients) {
         try {
