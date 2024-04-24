@@ -48,6 +48,7 @@ const corsHeaders = {
 
 Deno.serve(async (req : Request) => {
     // This is needed if you're planning to invoke your function from a browser.
+    // tells browser what type of requests are allowed
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -86,11 +87,12 @@ Deno.serve(async (req : Request) => {
     const { data: userData } = await supabaseClient.auth.getUser(jwt);
     const user = userData.user;
 
+    /* Failed to fetch supabase user */
     if (!user) {
         return new Response("Failed to fetch user.", { status: 500 });
     }
 
-    /* check if user is a verified user */
+    /* check if user is a verified user. Verified user = the userdata that the site uses */
     const { data: verifiedUsers, error: verifiedUsersError } = await supabaseClient.from('users')
         .select('*')
         .eq('email', user.email);
@@ -116,6 +118,7 @@ Deno.serve(async (req : Request) => {
         return new Response("Failed to fetch user permissions.", { status: 500 })
     }
     
+    /* check if user has an admin role */
     let isAdmin = false;
     (permissions || []).map(p => {
         if (p.permission === 'ADMIN') {
@@ -181,22 +184,37 @@ Deno.serve(async (req : Request) => {
         recipients.push(recipient_address)
     } else if (recipient_type === 'ORGANIZATION') {
         /* get all members from organization */
+        type ct = { // correct type
+            active: boolean,
+            users: {
+                email: string,
+                active: boolean,
+                is_faculty: boolean
+            }
+        }
         const { data: orgMembers, error: orgMembersError } = await supabaseClient.from('memberships')
             .select(`
                 active,
                 users (
-                    email
-                )
-            `)
-            .eq('organization_id', Number(recipient_address));
+                    email,
+                    active,
+                    is_faculty
+                )`
+            )
+            .eq('organization_id', Number(recipient_address))
+            .returns<ct[]>();
+        
+        
         if (orgMembersError) {
             return new Response("Failed to fetch organization members.", { status: 500 });
         }
 
-        orgMembers.map(member => {
-            if (member.active) recipients.push(member.users[0].email)
+        (orgMembers).map((member : ct) => {
+            if (member.active && member.users.active && !member.users.is_faculty) recipients.push(member.users.email)
         });
     }
+    
+    
 
     for (const emailAddress of recipients) {
         try {
