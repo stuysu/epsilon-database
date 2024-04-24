@@ -64,7 +64,7 @@ STORAGE_PERMS.sql
 - GOOGLE_CLIENT_ID=
 - GOOGLE_CLIENT_SECRET=
 
-## Sending Emails
+## Sending Emails (add these to supabase edge function environment in the docker compose file)
 - NODEMAILER_EMAIL=
 - NODEMAILER_FROM=
 - NODEMAILER_PASSWORD=
