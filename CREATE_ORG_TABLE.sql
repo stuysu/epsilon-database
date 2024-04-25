@@ -32,8 +32,6 @@ CREATE TABLE organizations (
   meeting_schedule TEXT NULL,
   meeting_days VARCHAR(255) NULL,
   commitment_level org_commitment DEFAULT 'NONE',
-  keywords TEXT NULL,
-  tags TEXT NULL,
   is_returning BOOLEAN DEFAULT false,
   returning_info TEXT NULL,
   state org_state DEFAULT 'PENDING',
