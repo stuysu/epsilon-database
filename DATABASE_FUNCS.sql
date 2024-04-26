@@ -12,10 +12,10 @@ AS $$
   WHERE (
     (
       start_time >= meeting_start and
-      start_time < meeting_end
+      start_time <= meeting_end
     ) or
     (
-      end_time > meeting_start and
+      end_time >= meeting_start and
       end_time <= meeting_end
     )
   )
