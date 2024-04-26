@@ -20,8 +20,8 @@ END $$;
 CREATE TABLE organizations (
   id SERIAL PRIMARY KEY,
   creator_id INT NOT NULL,
-  name VARCHAR(255) UNIQUE NOT NULL,
-  url VARCHAR(255) UNIQUE NOT NULL,
+  name TEXT UNIQUE NOT NULL,
+  url TEXT UNIQUE NOT NULL,
   socials TEXT NULL,
   picture VARCHAR(255) NULL,
   mission TEXT NULL,
@@ -30,7 +30,9 @@ CREATE TABLE organizations (
   appointment_procedures TEXT NULL,
   uniqueness TEXT NULL,
   meeting_schedule TEXT NULL,
-  meeting_days VARCHAR(255) NULL,
+  meeting_days TEXT[] NULL,
+  keywords TEXT NULL, -- keywords is text. search is compared to keywords with ilike pattern
+  tags TEXT[] NULL,
   commitment_level org_commitment DEFAULT 'NONE',
   is_returning BOOLEAN DEFAULT false,
   returning_info TEXT NULL,
