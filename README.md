@@ -4,10 +4,6 @@ Please save any useful / essential SQL queries here.
 
 This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was deleted because someone thought it was a table.
 
-# TODO
-
-- moved to trello
-
 # why is this a thing?
 
 - we can run sql files in supabase's sql editor (and self hosted supabase doesn't save them)
