@@ -11,8 +11,8 @@ CREATE TABLE permissions (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL,
   permission site_perms NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   CONSTRAINT no_duplicate_permissions UNIQUE(user_id, permission)
 );
