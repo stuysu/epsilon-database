@@ -3,8 +3,8 @@ CREATE TABLE strikes (
   organization_id INT NOT NULL,
   admin_id INT NOT NULL, -- the person who handed out the strike
   reason TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organization_id) REFERENCES organizations(id) on delete cascade,
   FOREIGN KEY (admin_id) REFERENCES users(id)
 );
