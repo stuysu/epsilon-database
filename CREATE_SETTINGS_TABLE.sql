@@ -2,8 +2,8 @@ CREATE TABLE settings(
     Lock char(1) not null DEFAULT 'X', -- make this column contain only 1 value, but also be unique to create only 1 row
     /* Other columns */
     required_members INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
     /* constraints */
     constraint PK_T1 PRIMARY KEY (Lock),
