@@ -14,8 +14,8 @@ CREATE TABLE memberships (
   role org_role DEFAULT 'MEMBER' NOT NULL,
   role_name VARCHAR(255),
   active BOOLEAN DEFAULT false NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organization_id) REFERENCES organizations(id) on delete cascade,
   FOREIGN KEY (user_id) REFERENCES users(id) on delete cascade,
   CONSTRAINT no_duplicate_joins UNIQUE(organization_id, user_id)
