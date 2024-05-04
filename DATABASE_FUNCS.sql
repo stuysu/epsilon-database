@@ -12,12 +12,12 @@ AS $$
   INNER JOIN meetings as m ON (m.room_id = r.id)
   WHERE (
     (
-      start_time >= meeting_start and
-      start_time <= meeting_end
+      meeting_start >= start_time and
+      meeting_start <= end_time
     ) or
     (
-      end_time >= meeting_start and
-      end_time <= meeting_end
+      meeting_end >= start_time and
+      meeting_end <= end_time
     )
   )
 $$;
