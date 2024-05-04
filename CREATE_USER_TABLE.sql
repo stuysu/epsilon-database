@@ -8,8 +8,8 @@ CREATE TABLE users (
   picture VARCHAR(255) NULL, -- server should generate a default pfp
   is_faculty BOOLEAN DEFAULT false NOT NULL,
   active BOOLEAN DEFAULT true NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 create extension if not exists moddatetime schema extensions;
