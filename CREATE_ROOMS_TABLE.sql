@@ -6,8 +6,8 @@ CREATE TABLE rooms (
   approval_required BOOLEAN DEFAULT false,
   available_days VARCHAR(255) DEFAULT 'MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY',
   comments TEXT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 create extension if not exists moddatetime schema extensions;
