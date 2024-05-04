@@ -5,6 +5,7 @@ CREATE TABLE organizationedits (
   organization_id INT UNIQUE NOT NULL,
   name VARCHAR(255) UNIQUE NULL,
   url VARCHAR(255) UNIQUE NULL,
+  socials VARCHAR(255) NULL,
   picture VARCHAR(255) NULL,
   mission TEXT NULL,
   purpose TEXT NULL,
