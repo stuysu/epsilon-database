@@ -23,7 +23,7 @@ CREATE TABLE organizations (
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
   socials TEXT NULL,
-  picture VARCHAR(255) NULL,
+  picture TEXT NULL,
   mission TEXT NULL,
   purpose TEXT NULL,
   benefit TEXT NULL,
