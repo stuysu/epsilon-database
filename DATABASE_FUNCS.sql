@@ -18,6 +18,14 @@ AS $$
     (
       meeting_end >= start_time and
       meeting_end <= end_time
+    ) or
+    (
+      start_time >= meeting_start and
+      start_time <= meeting_end
+    ) or
+    (
+      end_time >= meeting_start and
+      end_time <= meeting_end
     )
   )
 $$;
