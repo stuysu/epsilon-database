@@ -11,6 +11,7 @@ CREATE TABLE memberships (
   id SERIAL PRIMARY KEY,
   organization_id INT NOT NULL,
   user_id INT NOT NULL,
+  join_message TEXT NOT NULL,
   role org_role DEFAULT 'MEMBER' NOT NULL,
   role_name VARCHAR(255),
   active BOOLEAN DEFAULT false NOT NULL,
