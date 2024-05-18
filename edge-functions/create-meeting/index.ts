@@ -63,7 +63,16 @@ Deno.serve(async (req : Request) => {
     }
 
     const siteUser = verifiedUsers[0];
-    const body : BodyType = await req.json();
+    const bodyJson = await req.json();
+    const body : BodyType = {
+        organization_id: bodyJson.organization_id,
+        title: bodyJson.title,
+        description: bodyJson.description,
+        room_id: bodyJson.room_id,
+        start_time: bodyJson.start_time,
+        end_time: bodyJson.end_time,
+        is_public: bodyJson.is_public
+    }
 
     /* validate that user is admin in organization */
     const { data: adminMembership, error: adminMembershipError } = await supabaseClient.from('memberships')
@@ -132,7 +141,7 @@ Deno.serve(async (req : Request) => {
 
             for (const member of memberData) {
                 // do not notify faculty
-                if (member.users.is_faculty) continue;
+                if (member.users.is_faculty && !bodyJson.notify_faculty) continue;
 
                 recipientEmails.push(member.users.email);
             }
