@@ -71,3 +71,6 @@ STORAGE_PERMS.sql
 - NODEMAILER_HOST=
 - NODEMAILER_PORT=
 - NODEMAILER_SECURE=
+
+## Changing postgres password
+Only changing postgres password in .env file doesn't work. Need to run ./change_password.sh
