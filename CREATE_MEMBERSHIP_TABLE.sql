@@ -12,6 +12,7 @@ CREATE TABLE memberships (
   organization_id INT NOT NULL,
   user_id INT NOT NULL,
   join_message TEXT,
+  allow_notifications BOOL DEFAULT true,
   role org_role DEFAULT 'MEMBER' NOT NULL,
   role_name VARCHAR(255),
   active BOOLEAN DEFAULT false NOT NULL,
