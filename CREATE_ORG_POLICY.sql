@@ -1,3 +1,16 @@
+CREATE OR REPLACE FUNCTION user_has_pending_organization(user_email text)
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM organizations o
+    JOIN users u ON o.creator_id = u.id
+    WHERE u.email = user_email
+    AND o.state = 'PENDING'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 CREATE POLICY "Allow authenticated users to create pending organizations"
 ON public.organizations
 FOR INSERT
@@ -7,6 +20,8 @@ WITH CHECK (
     FROM users AS u
     WHERE (u.email = (auth.jwt() ->> 'email'))
   )
+  /* Don't allow users to create an organization if they already have one pending */
+  AND NOT user_has_pending_organization(auth.jwt() ->> 'email')
   AND state = 'PENDING'
 );
 
