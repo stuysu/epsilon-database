@@ -1,5 +1,6 @@
-import nodemailer from 'npm:nodemailer@6.9.10'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import Transport from '../_shared/emailTransport.ts';
+import corsHeaders from '../_shared/cors.ts';
 
 type BodyType = {
     recipient: {
@@ -13,16 +14,6 @@ type BodyType = {
         content_parameters?: string[]
     }
 }
-
-const transport = nodemailer.createTransport({
-    host: Deno.env.get('NODEMAILER_HOST')!,
-    port: Number(Deno.env.get('NODEMAILER_PORT')!),
-    secure: Boolean(Deno.env.get('NODEMAILER_SECURE')!),
-    auth: {
-        user: Deno.env.get('NODEMAILER_EMAIL')!,
-        pass: Deno.env.get('NODEMAILER_PASSWORD')!
-    }
-});
 
 const tempTemplates : {[k : string]: string} = {
     'MEETING_CREATE': 'Hey ${ARG1}! A new meeting has been created! \n${ARG2}\n${ARG3}\n${ARG4}' //ARG1 <- org name, ARG2 <- Title, ARG3 <- description, ARG4 <- time string
@@ -41,10 +32,7 @@ const createBreakpoint = (str : string) => {
     )
 }
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+
 
 Deno.serve(async (req : Request) => {
     // This is needed if you're planning to invoke your function from a browser.
@@ -252,7 +240,7 @@ Deno.serve(async (req : Request) => {
     for (const emailAddress of recipients) {
         try {
             await new Promise<void>((resolve, reject) => {
-                transport.sendMail({
+                Transport.sendMail({
                     from: Deno.env.get('NODEMAILER_FROM')!,
                     to: emailAddress,
                     subject: content_title,
