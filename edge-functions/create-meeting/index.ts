@@ -74,16 +74,7 @@ Deno.serve(async (req : Request) => {
         is_public: bodyJson.is_public
     }
 
-    /* validate that user is admin in organization */
-    const { data: adminMembership, error: adminMembershipError } = await supabaseClient.from('memberships')
-        .select(`id`)
-        .eq('organization_id', body.organization_id)
-        .eq('user_id', siteUser.id)
-        .in('role', ['ADMIN', 'CREATOR']);
-    
-    if (adminMembershipError || !adminMembership || !adminMembership.length) {
-        return new Response("User is unauthorized.", { status: 401 });
-    }
+    /* removed backend validation because it already exists in RLS */
 
     type rtyp = {
         id: number,
