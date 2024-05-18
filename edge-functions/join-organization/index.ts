@@ -140,22 +140,15 @@ You are receiving this message because you are an admin of ${orgData[0].name}
 This email is to let you know that ${siteUser.first_name} ${siteUser.last_name} has requested to join ${orgData[0].name}. You can approve their request at ${Deno.env.get('SITE_URL')}/${orgData[0].url}/admin/member-requests`
 
         try {
-            await new Promise<void>((resolve, reject) => {
-                Transport.sendMail({
-                    from: Deno.env.get('NODEMAILER_FROM')!,
-                    to: admin.users.email,
-                    subject: `Someone has requested to join ${orgData[0].name} | Epsilon`,
-                    text: emailBody,
-                }, (error : Error) => {
-                    if (error) {
-                        return reject(error)
-                    }
-            
-                    resolve()
-                })
+            /* don't use await here. let this operation perform asynchronously */
+            Transport.sendMail({
+                from: Deno.env.get('NODEMAILER_FROM')!,
+                to: admin.users.email,
+                subject: `Someone has requested to join ${orgData[0].name} | Epsilon`,
+                text: emailBody,
             })
         } catch (error) {
-            return new Response(error.message, { status: 500 })
+            console.log(error);
         }
     }
 
