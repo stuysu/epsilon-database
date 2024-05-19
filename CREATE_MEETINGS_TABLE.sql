@@ -31,12 +31,12 @@ USING (
     FROM users AS u
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND is_public = true
     )
+    AND is_public = true
   )
 );
 
-CREATE POLICY "Enable read access of all organization meetings to organization members"
+CREATE POLICY "Enable read access of all organization meetings to active organization members"
 ON public.meetings
 FOR SELECT
 TO authenticated
@@ -48,6 +48,7 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND m.organization_id = organization_id
+      AND m.active = true
     )
   )
 );
