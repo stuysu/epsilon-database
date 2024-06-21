@@ -41,7 +41,7 @@ USING (
     INNER JOIN users as u ON (m.user_id = u.id)
     WHERE(
       u.email = auth.jwt() ->> 'email'
-      AND organization_id = m.organization_id
+      AND public.organizationedits.organization_id = m.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -53,7 +53,7 @@ WITH CHECK (
     INNER JOIN users as u ON (m.user_id = u.id)
     WHERE(
       u.email = auth.jwt() ->> 'email'
-      AND organization_id = m.organization_id
+      AND public.organizationedits.organization_id = m.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
