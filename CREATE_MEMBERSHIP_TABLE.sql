@@ -60,12 +60,12 @@ WITH CHECK(
     SELECT 1
     FROM organizations AS o
     WHERE (
-      o.id = organization_id
+      o.id = public.memberships.organization_id
     )
   ))
-  AND (active = false) 
-  AND (role = 'MEMBER') 
-  AND role_name IS NULL
+  AND (public.memberships.active = false) 
+  AND (public.memberships.role = 'MEMBER') 
+  AND (public.memberships.role_name IS NULL)
 );
 
 CREATE POLICY "Enable members except creator to delete their own memberships"
@@ -78,7 +78,7 @@ USING (
     FROM users as u
     WHERE (
       (u.email = (auth.jwt() ->> 'email'))
-      AND (user_id = u.id)
+      AND (public.memberships.user_id = u.id)
     )
   )
   AND (role != 'CREATOR')
@@ -121,14 +121,14 @@ ON public.memberships
 FOR UPDATE
 TO authenticated
 USING (
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_admin_organizations()
   )
   AND role != 'ADMIN'
   AND role != 'CREATOR'
 )
 WITH CHECK(
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_admin_organizations()
   )
   AND role != 'ADMIN'
@@ -140,7 +140,7 @@ ON public.memberships
 FOR DELETE
 TO authenticated
 USING (
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_admin_organizations()
   )
   AND role != 'ADMIN'
@@ -152,12 +152,12 @@ ON public.memberships
 FOR UPDATE
 TO authenticated
 USING (
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_creator_organizations()
   )
 )
 WITH CHECK (
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_creator_organizations()
   )
 );
@@ -167,7 +167,7 @@ ON public.memberships
 FOR DELETE
 TO authenticated
 USING (
-  organization_id IN (
+  public.memberships.organization_id IN (
     SELECT public.get_user_creator_organizations()
   )
   AND role != 'CREATOR'
