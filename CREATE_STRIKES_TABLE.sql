@@ -28,7 +28,7 @@ USING (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.strikes.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
