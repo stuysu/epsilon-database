@@ -1,6 +1,6 @@
 # Epsilon Database
 
-[https://github.com/stuysu/epsilon-database](Epsilon Functions)
+[Epsilon Edge Functions](https://github.com/stuysu/epsilon-database)
 
 Please save any useful / essential SQL queries here.
 
