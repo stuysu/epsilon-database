@@ -22,7 +22,7 @@ WITH CHECK (
   )
   /* Don't allow users to create an organization if they already have one pending */
   AND NOT user_has_pending_organization(auth.jwt() ->> 'email')
-  AND state = 'PENDING'
+  AND public.organizations.state = 'PENDING'
 );
 
 CREATE POLICY "Allow authenticated users to update pending organizations"
@@ -36,7 +36,7 @@ WITH CHECK (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND m.role = 'CREATOR'
-      AND organizations.id = m.organization_id
+      AND public.organizations.id = m.organization_id
     )
   )
   AND state = 'PENDING'
@@ -53,7 +53,7 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND m.role = 'CREATOR'
-      AND organizations.id = m.organization_id
+      AND public.organizations.id = m.organization_id
     )
   )
 );
