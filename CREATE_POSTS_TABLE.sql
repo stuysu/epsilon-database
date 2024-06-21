@@ -40,7 +40,7 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND (m.role = 'CREATOR' OR m.role = 'ADMIN')
-      AND (m.organization_id = organization_id)
+      AND (m.organization_id = public.posts.organization_id)
     )
   )
 )
@@ -52,7 +52,7 @@ WITH CHECK (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND (m.role = 'CREATOR' OR m.role = 'ADMIN')
-      AND (m.organization_id = organization_id)
+      AND (m.organization_id = public.posts.organization_id)
     )
   )
 );
