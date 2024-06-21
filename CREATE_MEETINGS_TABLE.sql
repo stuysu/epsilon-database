@@ -32,7 +32,7 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
     )
-    AND is_public = true
+    AND public.meetings.is_public = true
   )
 );
 
@@ -64,7 +64,7 @@ WITH CHECK (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.meetings.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -81,7 +81,7 @@ USING (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.meetings.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -98,7 +98,7 @@ USING (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.meetings.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -110,7 +110,7 @@ WITH CHECK (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.meetings.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
