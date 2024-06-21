@@ -65,7 +65,7 @@ STORAGE_PERMS.sql
 - ENABLE_GOOGLE_SIGNUP=true
 - GOOGLE_CLIENT_ID=
 - GOOGLE_CLIENT_SECRET=
-- AUTH_REDIRECT=<domain>/auth/v1/callback (replace GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI with ${AUTH_REDIRECT} in compose file)
+- AUTH_REDIRECT=<domain>/auth/v1/callback (replace GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI with ${AUTH_REDIRECT} in compose file, and add any valid redirects to google console)
 
 ## Sending Emails (add these to .env file as well as supabase edge function environment in the docker compose file)
 - NODEMAILER_EMAIL=
