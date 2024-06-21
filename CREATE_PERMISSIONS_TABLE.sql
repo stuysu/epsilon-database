@@ -35,7 +35,7 @@ USING (
     FROM users AS u
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND u.id = user_id
+      AND u.id = public.permissions.user_id
     )
   )
 );
@@ -50,8 +50,8 @@ USING (
     FROM users AS u
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND u.id = user_id
-      AND permission = 'ADMIN'
+      AND u.id = public.permissions.user_id
+      AND public.permissions.permission = 'ADMIN'
     )
   )
 )
@@ -61,8 +61,8 @@ WITH CHECK (
     FROM users AS u
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND u.id = user_id
-      AND permission = 'ADMIN'
+      AND u.id = public.permissions.user_id
+      AND public.permissions.permission = 'ADMIN'
     )
   )
 );
