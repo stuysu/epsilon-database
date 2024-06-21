@@ -28,7 +28,7 @@ USING (
     INNER JOIN memberships as m ON (u.id = m.user_id)
     WHERE (
       u.email = (auth.jwt() ->> 'email')
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.orgmessages.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -46,7 +46,7 @@ USING (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND u.id = user_id
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.orgmessages.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -64,7 +64,7 @@ WITH CHECK (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND u.id = user_id
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.orgmessages.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
@@ -82,7 +82,7 @@ WITH CHECK (
     WHERE (
       u.email = (auth.jwt() ->> 'email')
       AND u.id = user_id
-      AND m.organization_id = organization_id
+      AND m.organization_id = public.orgmessages.organization_id
       AND (m.role = 'ADMIN' OR m.role = 'CREATOR')
     )
   )
