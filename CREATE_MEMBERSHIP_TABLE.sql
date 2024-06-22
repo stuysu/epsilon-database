@@ -145,8 +145,22 @@ WITH CHECK(
   public.memberships.organization_id IN (
     SELECT public.get_user_admin_organizations()
   )
-  AND role != 'ADMIN'
-  AND role != 'CREATOR'
+  AND (
+    (
+      role != 'ADMIN'
+      AND role != 'CREATOR'
+    ) OR
+    (
+      EXISTS (
+        SELECT 1
+        FROM users as u
+        WHERE (
+          (u.email = (auth.jwt() ->> 'email'))
+          AND (public.memberships.user_id = u.id)
+        )
+      )
+    )
+  )
 );
 
 CREATE POLICY "Enable regular membership delete access to organization admins only"
