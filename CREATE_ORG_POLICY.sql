@@ -28,6 +28,19 @@ WITH CHECK (
 CREATE POLICY "Allow authenticated users to update pending organizations"
 ON public.organizations
 FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users AS u
+    INNER JOIN memberships as m ON (m.user_id = u.id)
+    WHERE (
+      u.email = (auth.jwt() ->> 'email')
+      AND m.role = 'CREATOR'
+      AND public.organizations.id = m.organization_id
+    )
+  )
+  AND public.organizations.state = 'PENDING'
+)
 WITH CHECK (
   EXISTS (
     SELECT 1
@@ -39,7 +52,7 @@ WITH CHECK (
       AND public.organizations.id = m.organization_id
     )
   )
-  AND state = 'PENDING'
+  AND public.organizations.state = 'PENDING'
 );
 
 CREATE POLICY "Allow authenticated users to delete their own organization"
