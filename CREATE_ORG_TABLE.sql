@@ -19,7 +19,6 @@ END $$;
 -- create organizations table
 CREATE TABLE organizations (
   id SERIAL PRIMARY KEY,
-  creator_id INT NOT NULL,
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
   socials TEXT NULL,
@@ -48,24 +47,6 @@ create extension if not exists moddatetime schema extensions;
 -- trigger to update "updated_at" field before every update to row
 create trigger handle_updated_at before update on organizations
   for each row execute procedure moddatetime (updated_at);
-
--- create membership on create
-CREATE OR REPLACE FUNCTION add_creator()
-RETURNS TRIGGER
-SECURITY DEFINER
-AS $$
-BEGIN
-  INSERT INTO memberships
-    (user_id, organization_id, role, active)
-  VALUES
-    (new.creator_id, new.id, 'CREATOR', true);
-  
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql;
-
-create trigger create_creator_membership after insert on organizations
-  for each row execute procedure add_creator();
 
 -- should always enable RLS for every table, even if it is public. This gives full control to policies.
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
