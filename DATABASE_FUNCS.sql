@@ -62,3 +62,17 @@ BEGIN
   RETURN FOUND;
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION get_unique_meeting_days(p_month INTEGER, p_year INTEGER) RETURNS INTEGER[] AS $$
+DECLARE
+    unique_meeting_days INTEGER[];
+BEGIN
+    SELECT ARRAY_AGG(DISTINCT EXTRACT(DAY FROM start_time)::INTEGER)
+    INTO unique_meeting_days
+    FROM meetings
+    WHERE EXTRACT(MONTH FROM meeting_date) = p_month
+      AND EXTRACT(YEAR FROM meeting_date) = p_year;
+    
+    RETURN unique_meeting_days;
+END;
+$$ LANGUAGE plpgsql;
