@@ -63,15 +63,15 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION get_unique_meeting_days(p_month INTEGER, p_year INTEGER) RETURNS INTEGER[] AS $$
+CREATE OR REPLACE FUNCTION get_unique_meeting_days(month INTEGER, year INTEGER) RETURNS INTEGER[] AS $$
 DECLARE
     unique_meeting_days INTEGER[];
 BEGIN
     SELECT ARRAY_AGG(DISTINCT EXTRACT(DAY FROM start_time)::INTEGER)
     INTO unique_meeting_days
-    FROM meetings
-    WHERE EXTRACT(MONTH FROM meeting_date) = p_month
-      AND EXTRACT(YEAR FROM meeting_date) = p_year;
+    FROM public.meetings
+    WHERE EXTRACT(MONTH FROM start_time) = month
+      AND EXTRACT(YEAR FROM start_time) = year;
     
     RETURN unique_meeting_days;
 END;
