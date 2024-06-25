@@ -19,6 +19,7 @@ This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was dele
 # create buckets
 
 - public-files (make it public)
+- file size limit of 5MB
 
 # order of running files (some depend on others)
 
