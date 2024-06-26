@@ -7,7 +7,7 @@ BEGIN
     DROP TYPE org_commitment;
   END IF;
 
-  CREATE TYPE org_state AS ENUM ('PENDING', 'LOCKED', 'UNLOCKED', 'ADMIN');
+  CREATE TYPE org_state AS ENUM ('PENDING', 'LOCKED', 'UNLOCKED', 'ADMIN', 'PUNISHED');
   CREATE TYPE org_commitment AS ENUM ('NONE', 'LOW', 'MEDIUM', 'HIGH');
 END $$;
 
