@@ -53,7 +53,7 @@ DATABASE_FUNC_PERMS.sql
 
 STORAGE_PERMS.sql
 
-CREATE_GOOGLETOKENS.sql (and create one empty entry)
+CREATE_BACKGROUNDTOKENS.sql (and create entries for services you need)
 
 # supabase env
 
