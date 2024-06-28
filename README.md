@@ -53,6 +53,8 @@ DATABASE_FUNC_PERMS.sql
 
 STORAGE_PERMS.sql
 
+CREATE_GOOGLETOKENS.sql (and create one empty entry)
+
 # supabase env
 
 - DASHBORD_USERNAME <- set for supabase dashboard sign in
