@@ -16,4 +16,4 @@ create extension if not exists moddatetime schema extensions;
 create trigger handle_updated_at before update on googletokens
   for each row execute procedure moddatetime (updated_at);
 
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE googletokens ENABLE ROW LEVEL SECURITY;
