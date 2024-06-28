@@ -1,7 +1,7 @@
-CREATE TABLE googletokens(
-    Lock char(1) not null DEFAULT 'X', -- make this column contain only 1 value, but also be unique to create only 1 row
+CREATE TABLE backgroundtokens(
     /* Other columns */
-    refresh TEXT DEFAULT null,
+    service TEXT,
+    tokens TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
