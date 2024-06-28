@@ -3,11 +3,7 @@ CREATE TABLE backgroundtokens(
     service TEXT,
     tokens TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-
-    /* constraints */
-    constraint PK_T2 PRIMARY KEY (Lock),
-    constraint CK_T2_Locked CHECK (Lock='X')
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 create extension if not exists moddatetime schema extensions;
