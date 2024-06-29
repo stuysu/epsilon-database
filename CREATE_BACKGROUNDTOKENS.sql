@@ -1,6 +1,6 @@
 CREATE TABLE backgroundtokens(
     /* Other columns */
-    service TEXT,
+    service TEXT PRIMARY KEY,
     tokens TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
