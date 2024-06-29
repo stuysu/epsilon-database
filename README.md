@@ -55,6 +55,8 @@ STORAGE_PERMS.sql
 
 CREATE_BACKGROUNDTOKENS.sql (and create entries for services you need)
 
+CREATE_GOOGLECALENDARS.sql
+
 # supabase env
 
 - DASHBORD_USERNAME <- set for supabase dashboard sign in
