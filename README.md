@@ -59,6 +59,8 @@ CREATE_GOOGLECALENDARS.sql
 
 CREATE_GOOGLECALENDAREVENTS.sql
 
+CREATE ANNOUNCEMENTS_TABLE.sql
+
 # supabase env
 
 - DASHBORD_USERNAME <- set for supabase dashboard sign in
