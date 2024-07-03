@@ -23,6 +23,8 @@ This repository was created after the CREATE_MEMBERSHIP_TABLE SQL Query was dele
 
 # order of running files (some depend on others)
 
+UPDATE: there is now a number infront of the file name to indicate the order, though will live the order of the main functionality just in case.
+
 CREATE_USER_TABLE.sql
 
 CREATE_ORG_TABLE.sql
