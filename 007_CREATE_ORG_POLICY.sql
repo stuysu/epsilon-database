@@ -1,3 +1,4 @@
+-- Function is incompatible with current schema, see 021_FIX_PENDING_ORGANIZATION.sql for new definition
 CREATE OR REPLACE FUNCTION user_has_pending_organization(user_email text)
 RETURNS boolean AS $$
 BEGIN
