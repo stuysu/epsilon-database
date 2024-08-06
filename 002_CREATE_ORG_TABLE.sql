@@ -17,6 +17,7 @@ END $$;
 -- ADMIN: bypasses all requirements
 
 -- create organizations table
+-- see `022_EDIT_ORG_COLUMNS.sql` for modifications to columns
 CREATE TABLE organizations (
   id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,

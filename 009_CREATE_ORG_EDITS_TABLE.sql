@@ -1,5 +1,6 @@
 /* NULL means no update, admin client can skip over fields with value of null */
 /* if organizationEdit for org exists, then any updated fields will update that organizationEdit, else a new one is created */
+-- see `022_EDIT_ORG_COLUMNS.sql` for modifications to columns
 CREATE TABLE organizationedits (
   id SERIAL PRIMARY KEY,
   organization_id INT UNIQUE NOT NULL,
