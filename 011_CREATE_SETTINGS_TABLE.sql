@@ -1,3 +1,4 @@
+-- one row MUST be present in `settings` to ensure proper operation -- see `023_ADD_DEFAULT_SETTING.sql`
 CREATE TABLE settings(
     Lock char(1) not null DEFAULT 'X', -- make this column contain only 1 value, but also be unique to create only 1 row
     /* Other columns */
