@@ -42,6 +42,7 @@ BEGIN
     RETURN QUERY
     SELECT * 
     FROM organizations
+    WHERE organizations.state = 'UNLOCKED' OR organizations.state = 'ADMIN'
     ORDER BY random()
     LIMIT query_limit
     OFFSET query_offset;
