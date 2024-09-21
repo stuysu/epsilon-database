@@ -30,6 +30,7 @@ AS $$
   )
 $$;
 
+-- see 026_DISPLAY_LOCKED_ORGS.sql for latest version
 CREATE OR REPLACE FUNCTION get_random_organizations(seed FLOAT, query_offset INT, query_limit INT)
 RETURNS SETOF organizations
 security invoker
