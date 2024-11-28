@@ -6,4 +6,5 @@ ALTER TABLE settings ALTER COLUMN setting_value TYPE bigint; -- for timestamps
 -- add default
 INSERT INTO settings (name, setting_value) VALUES ('charter_deadline', 4294967296000);  -- arbitrary date in far future (2106)
 
-ALTER TABLE organizations ADD COLUMN faculty_email VARCHAR;
+ALTER TABLE organizations ADD IF NOT EXISTS faculty_email VARCHAR;
+ALTER TABLE organizationedits ADD IF NOT EXISTS faculty_email VARCHAR;
