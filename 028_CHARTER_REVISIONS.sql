@@ -4,7 +4,7 @@ ALTER TABLE settings ADD COLUMN name VARCHAR PRIMARY KEY DEFAULT 'required_membe
 ALTER TABLE settings RENAME COLUMN required_members TO setting_value;
 ALTER TABLE settings ALTER COLUMN setting_value TYPE bigint; -- for timestamps
 -- add default
-INSERT INTO settings (name, setting_value) VALUES ('charter_deadline', 4294967296000);  -- arbitrary date in far future (2106)
+INSERT INTO settings (name, setting_value) VALUES ('charter_deadline', 0);  -- no deadline
 
 ALTER TABLE organizations ADD IF NOT EXISTS faculty_email VARCHAR;
 ALTER TABLE organizationedits ADD IF NOT EXISTS faculty_email VARCHAR;
