@@ -33,7 +33,7 @@ deleted because someone thought it was a table.
 To set up your Supabase database with the current schema and database functions,
 execute all _**numbered**_ `.sql` files in the
 [Epsilon Database](https://github.com/stuysu/epsilon-database) repository, in
-numbered order, via the SQL query menu. (Hint: `cat *.sql` in most shells will
+numbered order, via the SQL query menu. (Hint: `cat 0*.sql` in most shells will
 allow you to copy all the SQL code in one operation).
 
 Files are prefixed with a number indicating the order that they must be run on
