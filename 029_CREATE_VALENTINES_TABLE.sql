@@ -12,4 +12,6 @@ CREATE TABLE valentinesmessages (
   FOREIGN KEY (verified_by) REFERENCES users(id)
 );
 
+ALTER TABLE valentinesmessages ENABLE ROW LEVEL SECURITY;
+
 ALTER TYPE site_perms ADD VALUE 'VALENTINES';
