@@ -15,7 +15,7 @@ USING (
   (EXISTS
     ( SELECT 1
       FROM users u
-      WHERE ((u.email = (jwt() ->> 'email'::text)) AND (fourdigitids.user_id = u.id))
+      WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (fourdigitids.user_id = u.id))
     )
   )
 );
