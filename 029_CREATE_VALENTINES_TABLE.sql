@@ -1,14 +1,15 @@
 CREATE TABLE valentinesmessages (
-  id INT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   sender INT NOT NULL,
-  recipient INT NOT NULL,
+  receiver INT NOT NULL,
   message TEXT NOT NULL,
   background VARCHAR(50) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   verified_at TIMESTAMP DEFAULT NULL,
   verified_by INT DEFAULT NULL,
+  show_sender BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (sender) REFERENCES users(id),
-  FOREIGN KEY (recipient) REFERENCES users(id),
+  FOREIGN KEY (receiver) REFERENCES users(id),
   FOREIGN KEY (verified_by) REFERENCES users(id)
 );
 
@@ -27,7 +28,7 @@ USING (
   (EXISTS
     ( SELECT 1
       FROM users u
-      WHERE ((u.email = (jwt() ->> 'email'::text)) AND (valentinesmessages.sender = u.id))
+      WHERE ((u.email = (auth.jwt() ->> 'email')) AND (valentinesmessages.sender = u.id))
     )
   )
 );
@@ -45,7 +46,7 @@ USING (
   (EXISTS
     ( SELECT 1
       FROM users u
-      WHERE ((u.email = (jwt() ->> 'email'::text)) AND (valentinesmessages.recipient = u.id))
+      WHERE ((u.email = (auth.jwt() ->> 'email')) AND (valentinesmessages.receiver = u.id))
     )
   )
 );
@@ -59,7 +60,7 @@ USING (
   (EXISTS
     ( SELECT 1
       FROM users u
-      WHERE ((u.email = (jwt() ->> 'email'::text)) AND (valentinesmessages.sender = u.id))
+      WHERE ((u.email = (auth.jwt() ->> 'email')) AND (valentinesmessages.sender = u.id))
     )
   )
 );
@@ -71,9 +72,9 @@ TO authenticated
 WITH CHECK (
       sender = ( SELECT id
       FROM users u
-      WHERE ((u.email = (jwt() ->> 'email'::text)))
+      WHERE ((u.email = (auth.jwt() ->> 'email')))
       LIMIT 1
-    ) AND verified_at = NULL AND verified_by = NULL
+    ) AND verified_at IS NULL AND verified_by IS NULL
 );
 
 
@@ -88,7 +89,10 @@ USING (
     ( SELECT 1
       FROM permissions
       WHERE ((permission = 'ADMIN' OR permission = 'VALENTINES')
-        AND user_id = ( SELECT id FROM users u WHERE (u.email = (jwt() ->> 'email'::text)) LIMIT 1))
+        AND user_id = ( SELECT id FROM users u WHERE (u.email = (auth.jwt() ->> 'email')) LIMIT 1))
     )
   )
 );
+
+GRANT INSERT,DELETE,SELECT ON valentinesmessages TO authenticated;
+GRANT UPDATE(verified_at, verified_by) ON valentinesmessages TO authenticated;
