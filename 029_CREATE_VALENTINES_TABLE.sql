@@ -89,7 +89,7 @@ ON "public"."valentinesmessages"
 FOR ALL
 TO authenticated
 USING (
-  (verified_at = NULL OR verified_by = NULL)
+  (verified_at is NULL OR verified_by is NULL)
   AND
   (EXISTS
     ( SELECT 1
