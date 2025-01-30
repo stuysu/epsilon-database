@@ -68,11 +68,11 @@ CREATE POLICY "Sender can create valid messages."
 ON "public"."valentinesmessages"
 FOR INSERT
 TO authenticated
-USING (
-	sender = ( SELECT id
+WITH CHECK (
+      sender = ( SELECT id
       FROM users u
       WHERE ((u.email = (jwt() ->> 'email'::text)))
-	LIMIT 1;
+      LIMIT 1
     ) AND verified_at = NULL AND verified_by = NULL
 );
 
@@ -82,13 +82,13 @@ ON "public"."valentinesmessages"
 FOR ALL
 TO authenticated
 USING (
-  (verified_at = NULL OR verified_by = NULL OR verified_at < updated_at)
+  (verified_at = NULL OR verified_by = NULL)
   AND
   (EXISTS
     ( SELECT 1
       FROM permissions
       WHERE ((permission = 'ADMIN' OR permission = 'VALENTINES')
-        AND user_id = ( SELECT id FROM users u WHERE (u.email = (jwt() ->> 'email'::text))))
+        AND user_id = ( SELECT id FROM users u WHERE (u.email = (jwt() ->> 'email'::text)) LIMIT 1))
     )
   )
 );
