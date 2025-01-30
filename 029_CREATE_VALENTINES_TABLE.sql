@@ -17,8 +17,14 @@ ALTER TABLE valentinesmessages ENABLE ROW LEVEL SECURITY;
 
 ALTER TYPE site_perms ADD VALUE 'VALENTINES';
 
+ALTER TABLE settings ADD IF NOT EXISTS visible BOOLEAN DEFAULT FALSE;
 -- 2025-02-14 00:00 EST, with seconds precision
-INSERT INTO settings (name, setting_value) VALUES ('valentines_deadline', 1739509200);
+INSERT INTO settings (name, setting_value, visible) VALUES ('valentines_deadline', 1739509200, TRUE);
+CREATE POLICY "Users can read all visible settings."
+ON "public"."settings"
+FOR SELECT
+TO AUTHENTICATED
+USING (visible);
 
 CREATE POLICY "Sender can read their messages."
 ON "public"."valentinesmessages"
