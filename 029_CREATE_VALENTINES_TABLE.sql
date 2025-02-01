@@ -84,19 +84,15 @@ WITH CHECK (
 );
 
 
-CREATE POLICY "Administrators can read and modify all unapproved messages."
+CREATE POLICY "Administrators can read and modify all messages."
 ON "public"."valentinesmessages"
 FOR ALL
 TO authenticated
-USING (
-  (verified_at is NULL OR verified_by is NULL)
-  AND
-  (EXISTS
-    ( SELECT 1
-      FROM permissions
-      WHERE ((permission = 'ADMIN' OR permission = 'VALENTINES')
-        AND user_id = ( SELECT id FROM users u WHERE (u.email = (auth.jwt() ->> 'email')) LIMIT 1))
-    )
+USING EXISTS
+  ( SELECT 1
+    FROM permissions
+    WHERE ((permission = 'ADMIN' OR permission = 'VALENTINES')
+      AND user_id = ( SELECT id FROM users u WHERE (u.email = (auth.jwt() ->> 'email')) LIMIT 1))
   )
 );
 
