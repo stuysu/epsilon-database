@@ -16,6 +16,7 @@ CREATE TABLE valentinesmessages (
 ALTER TABLE valentinesmessages ENABLE ROW LEVEL SECURITY;
 
 ALTER TYPE site_perms ADD VALUE 'VALENTINES';
+COMMIT;
 
 ALTER TABLE settings ADD IF NOT EXISTS visible BOOLEAN DEFAULT FALSE;
 -- 2025-02-14 00:00 EST, with seconds precision
@@ -88,13 +89,12 @@ CREATE POLICY "Administrators can read and modify all messages."
 ON "public"."valentinesmessages"
 FOR ALL
 TO authenticated
-USING EXISTS
+USING (EXISTS
   ( SELECT 1
     FROM permissions
     WHERE ((permission = 'ADMIN' OR permission = 'VALENTINES')
       AND user_id = ( SELECT id FROM users u WHERE (u.email = (auth.jwt() ->> 'email')) LIMIT 1))
-  )
-);
+));
 
 GRANT INSERT,DELETE,SELECT ON valentinesmessages TO authenticated;
 GRANT UPDATE(verified_at, verified_by) ON valentinesmessages TO authenticated;
