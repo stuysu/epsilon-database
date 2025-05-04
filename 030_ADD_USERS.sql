@@ -11,3 +11,5 @@ WITH CHECK(
       AND p.permission = 'ADMIN'
   )
 );
+
+ALTER TABLE users ADD CONSTRAINT unique_email UNIQUE (email);
