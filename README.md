@@ -1,7 +1,5 @@
 # Epsilon Database
 
-[Epsilon Edge Functions](https://github.com/stuysu/epsilon-database)
-
 SQL queries used to set up the database (e.g. creation of tables, modifications
 to the database schema, RLS, and database functions) must be saved here to
 ensure that new developers can set up a complete instance of the Epsilon backend
