@@ -33,3 +33,4 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.reorder_memberships TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.reorder_memberships(INT, INT[]) FROM PUBLIC, anon;
