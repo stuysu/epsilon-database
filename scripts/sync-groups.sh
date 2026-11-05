@@ -82,7 +82,7 @@ DRY=false; [[ "$1" == "--dry-run" ]] && DRY=true
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 
 # Desired leadership from the DB
-sql "select distinct u.email from public.memberships m join public.users u on u.id=m.user_id where m.role in ('ADMIN','CREATOR') order by 1" > "$tmp/leaders.txt"
+sql "select distinct u.email from public.memberships m join public.users u on u.id=m.user_id where m.role in ('ADMIN','CREATOR') and m.active = true order by 1" > "$tmp/leaders.txt"
 [ -s "$tmp/leaders.txt" ] || { echo "ABORT: leadership query returned no rows — refusing to empty the group" >&2; exit 1; }
 [ "$(wc -l < "$tmp/leaders.txt")" -ge 300 ] || { echo "ABORT: leadership query returned fewer than 300 rows, refusing to sync" >&2; exit 1; }
 
