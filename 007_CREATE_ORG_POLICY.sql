@@ -26,7 +26,7 @@ WITH CHECK (
   AND public.organizations.state = 'PENDING'
 );
 
--- see 051_ALLOW_COLEADS_EDIT_PENDING_ORG.sql for latest version (co-leads may edit)
+-- see 048_SECURITY_FIXES.sql for latest version (co-leads may edit)
 CREATE POLICY "Allow authenticated users to update pending organizations"
 ON public.organizations
 FOR UPDATE

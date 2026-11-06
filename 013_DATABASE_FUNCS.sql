@@ -1,6 +1,6 @@
 -- returns ids of rooms that are unavailable
 -- frontend will filter out all rooms using that information
--- see 052_GET_BOOKED_ROOMS_TIMESTAMPTZ.sql for latest version (timestamptz arguments)
+-- see 048_SECURITY_FIXES.sql for latest version (timestamptz arguments)
 create or replace function get_booked_rooms(meeting_start TIMESTAMP, meeting_end TIMESTAMP)
 returns TABLE (room_id INT, meeting_id INT)
 language sql
