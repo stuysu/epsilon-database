@@ -756,3 +756,47 @@ WITH CHECK (
       AND mt.organization_id = attendance.organization_id
   )
 );
+
+-- ====================================================================
+-- ATTENDANCE_ADMIN_TARGET_IS_MEMBER
+-- ====================================================================
+-- Club admins could mark any student present, including people who aren't in
+-- the club. The student being marked must now be an active member of the club,
+-- the same people the admin attendance page lists. Replaces the attendance
+-- admin policy above, so it must run after it.
+ALTER POLICY "Enable all access to organization admins" ON public.attendance
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users u
+    JOIN memberships m ON u.id = m.user_id
+    WHERE u.email = auth.jwt() ->> 'email'
+      AND m.organization_id = attendance.organization_id
+      AND m.role IN ('ADMIN', 'CREATOR')
+      AND m.active
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM users u
+    JOIN memberships m ON u.id = m.user_id
+    WHERE u.email = auth.jwt() ->> 'email'
+      AND m.organization_id = attendance.organization_id
+      AND m.role IN ('ADMIN', 'CREATOR')
+      AND m.active
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM meetings mt
+    WHERE mt.id = attendance.meeting_id
+      AND mt.organization_id = attendance.organization_id
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM memberships target
+    WHERE target.user_id = attendance.user_id
+      AND target.organization_id = attendance.organization_id
+      AND target.active
+  )
+);
