@@ -338,9 +338,19 @@ NOTIFY pgrst, 'reload schema';
 -- club could record attendance for another club's meeting.
 --
 -- Self check-in now requires that the meeting belongs to the member's club and
--- that it is between 15 minutes before start_time and end_time. Club admins and
+-- that it is within the check-in window (see the two functions below). Club admins and
 -- creators ("Enable all access to organization admins") and site admins can
 -- still mark attendance at any time. Safe to run more than once.
+
+-- Check-in window settings. Change the intervals here to widen or narrow the
+-- window, and keep CHECK_IN_OPENS_MINUTES_BEFORE / CHECK_IN_CLOSES_MINUTES_AFTER
+-- in the frontend (MyMeetingAttendance.tsx) in sync.
+CREATE OR REPLACE FUNCTION public.attendance_checkin_opens_before()
+RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '15 minutes' $$;
+
+CREATE OR REPLACE FUNCTION public.attendance_checkin_closes_after()
+RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '0 minutes' $$;
+
 DROP POLICY IF EXISTS "Enable insert access to active members of organization"
 ON public.attendance;
 
@@ -360,8 +370,8 @@ WITH CHECK (
       AND m.organization_id = public.attendance.organization_id
       AND m.active = true
       AND mt.id = public.attendance.meeting_id
-      AND now() >= mt.start_time - interval '15 minutes'
-      AND now() <= mt.end_time
+      AND now() >= mt.start_time - public.attendance_checkin_opens_before()
+      AND now() <= mt.end_time + public.attendance_checkin_closes_after()
     )
   )
 );
