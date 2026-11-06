@@ -1,6 +1,6 @@
 -- Security and correctness fixes, combined into one migration.
--- Safe to re-run. Already on prod: users admin policy and schedules lockdown.
--- The valentines section needs the matching frontend (epsilon#443).
+-- Safe to re-run. Applied to prod on 2026-11-05.
+-- The valentines and check-in sections rely on the matching frontend (epsilon#442).
 
 -- ====================================================================
 -- FIX_USERS_ADMIN_POLICY
@@ -346,10 +346,10 @@ NOTIFY pgrst, 'reload schema';
 -- window, and keep CHECK_IN_OPENS_MINUTES_BEFORE / CHECK_IN_CLOSES_MINUTES_AFTER
 -- in the frontend (MyMeetingAttendance.tsx) in sync.
 CREATE OR REPLACE FUNCTION public.attendance_checkin_opens_before()
-RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '15 minutes' $$;
+RETURNS interval LANGUAGE sql IMMUTABLE SET search_path = '' AS $$ SELECT interval '15 minutes' $$;
 
 CREATE OR REPLACE FUNCTION public.attendance_checkin_closes_after()
-RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '15 minutes' $$;
+RETURNS interval LANGUAGE sql IMMUTABLE SET search_path = '' AS $$ SELECT interval '15 minutes' $$;
 
 DROP POLICY IF EXISTS "Enable insert access to active members of organization"
 ON public.attendance;
@@ -724,7 +724,7 @@ COMMIT;
 -- ====================================================================
 -- Club admins could write attendance rows that pair their own organization_id
 -- with a meeting from another club. Require the meeting to belong to the same
--- organization. Apply after 056.
+-- organization. Must run after the active-admin section above.
 
 -- supersedes the attendance policy in the active-admin section above
 ALTER POLICY "Enable all access to organization admins" ON public.attendance
