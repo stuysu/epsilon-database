@@ -349,7 +349,7 @@ CREATE OR REPLACE FUNCTION public.attendance_checkin_opens_before()
 RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '15 minutes' $$;
 
 CREATE OR REPLACE FUNCTION public.attendance_checkin_closes_after()
-RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '0 minutes' $$;
+RETURNS interval LANGUAGE sql IMMUTABLE AS $$ SELECT interval '15 minutes' $$;
 
 DROP POLICY IF EXISTS "Enable insert access to active members of organization"
 ON public.attendance;
