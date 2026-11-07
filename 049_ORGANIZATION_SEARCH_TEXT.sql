@@ -36,3 +36,22 @@ GRANT EXECUTE ON FUNCTION public.search_text(public.organizations) TO anon, auth
 COMMIT;
 
 NOTIFY pgrst, 'reload schema';
+
+-- Same shuffle on every page for a given seed.
+BEGIN;
+
+CREATE OR REPLACE FUNCTION public.get_random_organizations(seed double precision, query_offset integer, query_limit integer)
+RETURNS SETOF public.organizations
+LANGUAGE sql
+STABLE
+SET search_path TO 'public'
+AS $$
+  SELECT *
+  FROM organizations
+  WHERE organizations.state IN ('UNLOCKED', 'ADMIN', 'LOCKED')
+  ORDER BY md5(seed::text || ':' || organizations.id::text), organizations.id
+  LIMIT query_limit
+  OFFSET query_offset
+$$;
+
+COMMIT;
