@@ -1,12 +1,11 @@
--- Opportunities module: the catalog is driven by the weekly Student Opportunity
--- Bulletin, which site admins upload and review before publishing.
+-- Opportunities, driven by the weekly Student Opportunity Bulletin.
 
 BEGIN;
 
 CREATE TABLE opportunity_categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
-    -- deleting a main category must not quietly take its sub-categories with it
+    -- a main category can't take its sub-categories with it
     parent_id INT NULL REFERENCES opportunity_categories(id) ON DELETE RESTRICT,
     position INT DEFAULT 0 NOT NULL
 );
@@ -29,7 +28,7 @@ CREATE TABLE opportunity_bulletins (
     UNIQUE (issue, published_on)
 );
 
--- Only plain web addresses may be stored, so no page can render a javascript: link.
+-- plain web addresses only, so no javascript: links
 CREATE OR REPLACE FUNCTION public.opportunity_links_are_safe(links TEXT[])
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -64,7 +63,6 @@ CREATE TABLE opportunities (
 
 create extension if not exists moddatetime schema extensions;
 
--- trigger to update "updated_at" field before every update to row
 create trigger handle_updated_at before update on opportunities
   for each row execute procedure moddatetime (updated_at);
 
@@ -77,6 +75,7 @@ CREATE TABLE opportunity_category_links (
 CREATE TABLE opportunity_eligibility_links (
     opportunity_id INT NOT NULL REFERENCES opportunities(id) ON DELETE CASCADE,
     eligibility_id INT NOT NULL REFERENCES opportunity_eligibilities(id) ON DELETE CASCADE,
+    preferred BOOLEAN NOT NULL DEFAULT false, -- "especially for", not a limit
     PRIMARY KEY (opportunity_id, eligibility_id)
 );
 
@@ -95,8 +94,7 @@ CREATE INDEX opportunity_bulletins_imported_by_idx ON opportunity_bulletins(impo
 CREATE INDEX opportunities_first_bulletin_id_idx ON opportunities(first_bulletin_id);
 CREATE INDEX opportunities_last_bulletin_id_idx ON opportunities(last_bulletin_id);
 
--- Catalog tables: Epsilon users can read, site admins can write. Any Google
--- account can sign in, so reading also requires a row in users.
+-- users can read, site admins can write; reading needs a row in users
 DO $$
 DECLARE
     t TEXT;
@@ -156,12 +154,10 @@ BEGIN
 END;
 $$;
 
--- Which file was uploaded, and by whom, is for admins only. Students can still
--- read everything the site shows about a bulletin.
+-- file_name and imported_by are admin-only
 REVOKE SELECT ON opportunity_bulletins FROM anon, authenticated;
 GRANT SELECT (id, issue, published_on, entry_count, imported_at) ON opportunity_bulletins TO authenticated;
 
--- Saved opportunities: each user only sees and changes their own.
 ALTER TABLE saved_opportunities ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can manage their own saved opportunities"
@@ -183,11 +179,8 @@ WITH CHECK (
     )
 );
 
--- Publishes a reviewed bulletin in one transaction. Runs as the caller, so the
--- admin-only policies above decide who may write. An entry that matched an
--- existing opportunity during review carries its id, so a corrected title still
--- updates that opportunity; other entries match on title_key. Either way the id,
--- and so students' saved lists, carry over from week to week.
+-- Publishes a reviewed bulletin in one transaction, as the caller, so the admin-only policies apply.
+-- Entries with an id update that row, others match on title_key, so saved lists carry over.
 CREATE OR REPLACE FUNCTION public.import_opportunity_bulletin(
     bulletin JSONB,
     entries JSONB,
@@ -206,8 +199,7 @@ DECLARE
     entry JSONB;
     existing_id INT;
     new_opportunity_id INT;
-    -- every opportunity this bulletin lists, so re-importing the same issue
-    -- still archives and clears labels on whatever it dropped
+    -- every listing this bulletin has, even on a re-import
     listed_ids INT[] := '{}';
     bad_link_title TEXT;
 BEGIN
@@ -256,16 +248,13 @@ BEGIN
         RAISE EXCEPTION 'Only site admins can publish a bulletin.';
     END IF;
 
-    -- one import at a time, so two admins publishing at once can't let an
-    -- older issue slip past the check below and overwrite a newer one
+    -- one import at a time, so the older-issue check below can't race
     PERFORM pg_advisory_xact_lock(hashtext('public.import_opportunity_bulletin'));
 
-    -- an older issue would roll descriptions back and archive newer listings
     IF EXISTS (SELECT 1 FROM opportunity_bulletins WHERE published_on > published) THEN
         RAISE EXCEPTION 'A newer bulletin has already been published, so this older one can''t be imported.';
     END IF;
-    -- the Long issue lists everything its Short version does, so the Short one
-    -- would only clear the Long one's labels
+    -- a Short issue would only clear its Long issue's labels
     IF issue_number LIKE '%S' AND EXISTS (
         SELECT 1 FROM opportunity_bulletins
         WHERE published_on = published
@@ -275,8 +264,7 @@ BEGIN
             left(issue_number, -1), issue_number;
     END IF;
 
-    -- file_name and imported_by are hidden from the API, so they are written
-    -- from the arguments rather than read back through EXCLUDED
+    -- these columns are hidden from the API, so not read back through EXCLUDED
     INSERT INTO opportunity_bulletins (issue, published_on, file_name, entry_count, imported_by)
     VALUES (issue_number, published, bulletin ->> 'file_name', jsonb_array_length(entries), importer_id)
     ON CONFLICT (issue, published_on) DO UPDATE SET
@@ -286,16 +274,14 @@ BEGIN
         imported_at = CURRENT_TIMESTAMP
     RETURNING id INTO new_bulletin_id;
 
-    -- Free the titles of every listing updated by id first, so renames can swap
-    -- or chain, and no entry matched by title can land on a listing that another
-    -- entry is renaming. The placeholder has a hyphen, which no real key does.
+    -- free the titles of listings updated by id first, so renames can swap or chain; no real key has a hyphen
     UPDATE opportunities SET title_key = 'renaming-' || id
     WHERE id IN (
         SELECT (e ->> 'id')::INT FROM jsonb_array_elements(entries) AS e
         WHERE e ->> 'id' IS NOT NULL
     );
 
-    -- entries with an id go first, for the same reason
+    -- entries with an id go first
     FOR entry IN
         SELECT e FROM jsonb_array_elements(entries) AS e
         ORDER BY (e ->> 'id' IS NULL)
@@ -380,18 +366,23 @@ BEGIN
         FROM jsonb_array_elements_text(entry -> 'category_ids');
 
         DELETE FROM opportunity_eligibility_links WHERE opportunity_id = new_opportunity_id;
-        INSERT INTO opportunity_eligibility_links (opportunity_id, eligibility_id)
-        SELECT new_opportunity_id, value::INT
-        FROM jsonb_array_elements_text(entry -> 'eligibility_ids');
+        INSERT INTO opportunity_eligibility_links (opportunity_id, eligibility_id, preferred)
+        SELECT new_opportunity_id, value::INT, false
+        FROM jsonb_array_elements_text(entry -> 'eligibility_ids')
+        UNION
+        SELECT new_opportunity_id, value::INT, true
+        FROM jsonb_array_elements_text(COALESCE(entry -> 'preferred_eligibility_ids', '[]'))
+        WHERE value NOT IN (SELECT jsonb_array_elements_text(entry -> 'eligibility_ids'))
+        ON CONFLICT DO NOTHING;
     END LOOP;
 
-    -- anything this bulletin lists stays active, even if it was also marked to archive
+    -- listed ones stay active even if also marked to archive
     UPDATE opportunities SET archived = true
     WHERE id = ANY(archive_ids)
         AND NOT (id = ANY(listed_ids))
         AND NOT archived;
 
-    -- labels such as "New" or "Deadline Today" only describe the latest bulletin
+    -- labels only describe the latest bulletin
     UPDATE opportunities SET bulletin_label = NULL
     WHERE bulletin_label IS NOT NULL
         AND NOT (id = ANY(listed_ids));
@@ -403,7 +394,6 @@ $$;
 REVOKE ALL ON FUNCTION public.import_opportunity_bulletin(JSONB, JSONB, INT[]) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.import_opportunity_bulletin(JSONB, JSONB, INT[]) TO authenticated;
 
--- Categories as they are organized in the bulletin.
 INSERT INTO opportunity_categories (name, position) VALUES
     ('Events of Interest', 1),
     ('Academic Programs', 2),
