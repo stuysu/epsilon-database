@@ -156,6 +156,36 @@ BEGIN
 END;
 $$;
 
+-- direct API writes would skip edited_fields and the stale-edit checks
+CREATE OR REPLACE FUNCTION public.opportunity_writes_via_functions()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+    IF current_user IN ('anon', 'authenticated')
+        AND coalesce(current_setting('opportunities.writing', true), '') <> 'on' THEN
+        RAISE EXCEPTION 'Opportunities can only be changed from the Opportunities pages.';
+    END IF;
+    RETURN coalesce(NEW, OLD);
+END;
+$$;
+
+DO $$
+DECLARE
+    t TEXT;
+BEGIN
+    FOREACH t IN ARRAY ARRAY['opportunities', 'opportunity_category_links', 'opportunity_eligibility_links']
+    LOOP
+        EXECUTE format(
+            'CREATE TRIGGER writes_via_functions BEFORE INSERT OR UPDATE OR DELETE ON public.%I
+             FOR EACH ROW EXECUTE FUNCTION public.opportunity_writes_via_functions()',
+            t
+        );
+    END LOOP;
+END;
+$$;
+
 -- file_name and imported_by are admin-only
 REVOKE SELECT ON opportunity_bulletins FROM anon, authenticated;
 GRANT SELECT (id, issue, published_on, entry_count, imported_at) ON opportunity_bulletins TO authenticated;
@@ -249,6 +279,7 @@ BEGIN
     IF importer_id IS NULL THEN
         RAISE EXCEPTION 'Only site admins can publish a bulletin.';
     END IF;
+    PERFORM set_config('opportunities.writing', 'on', true);
 
     -- one import at a time, so the older-issue check below can't race
     PERFORM pg_advisory_xact_lock(hashtext('public.import_opportunity_bulletin'));
@@ -441,6 +472,7 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Only site admins can edit opportunities.';
     END IF;
+    PERFORM set_config('opportunities.writing', 'on', true);
     IF coalesce(btrim(fields ->> 'title'), '') = '' THEN
         RAISE EXCEPTION 'The opportunity needs a title.';
     END IF;
