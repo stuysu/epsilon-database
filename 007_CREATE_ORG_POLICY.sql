@@ -26,6 +26,7 @@ WITH CHECK (
   AND public.organizations.state = 'PENDING'
 );
 
+-- see 048_SECURITY_FIXES.sql for latest version (co-leads may edit)
 CREATE POLICY "Allow authenticated users to update pending organizations"
 ON public.organizations
 FOR UPDATE
