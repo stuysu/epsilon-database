@@ -800,3 +800,56 @@ WITH CHECK (
       AND target.active
   )
 );
+
+-- ====================================================================
+-- COLUMN_WRITE_LIMITS
+-- ====================================================================
+-- Policies decide which rows someone can write, not which columns. A club
+-- admin could change user_id or organization_id on a membership row, which let
+-- them put any student into their club (or move a member into another club
+-- they lead) and then mark that student present. Members could also set
+-- created_at on their own check-in.
+-- The app only ever changes role, role_name and active on memberships, and
+-- only inserts organization_id, meeting_id and user_id into attendance (it
+-- never updates attendance), so limit writes to exactly those columns.
+-- Server functions using the service role are not affected.
+REVOKE UPDATE ON public.memberships FROM anon, authenticated;
+GRANT UPDATE (role, role_name, active) ON public.memberships TO authenticated;
+
+REVOKE INSERT, UPDATE ON public.attendance FROM anon, authenticated;
+GRANT INSERT (organization_id, meeting_id, user_id) ON public.attendance TO authenticated;
+
+-- ====================================================================
+-- REQUIRE_ACTIVE_CREATOR
+-- ====================================================================
+-- Same rule as REQUIRE_ACTIVE_ADMIN, for creators: a creator membership that
+-- has been made inactive no longer gives creator powers. Every creator
+-- membership on prod is active, so this takes access away from no one.
+CREATE OR REPLACE FUNCTION public.get_user_creator_organizations()
+RETURNS SETOF integer
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT organization_id
+  FROM memberships
+  INNER JOIN users ON (memberships.user_id = users.id)
+  WHERE (
+    (users.email = auth.jwt() ->> 'email')
+    AND (memberships.role = 'CREATOR')
+    AND memberships.active
+  )
+$$;
+
+ALTER POLICY "Allow authenticated users to delete their own organization" ON public.organizations
+USING (
+  EXISTS (
+    SELECT 1
+    FROM users u
+    JOIN memberships m ON m.user_id = u.id
+    WHERE u.email = auth.jwt() ->> 'email'
+      AND m.role = 'CREATOR'
+      AND m.active
+      AND organizations.id = m.organization_id
+  )
+);
