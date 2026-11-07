@@ -301,6 +301,12 @@ BEGIN
             ) THEN
                 RAISE EXCEPTION '"%" was edited while this bulletin was being reviewed. Choose the PDF again to include that edit.', entry ->> 'title';
             END IF;
+            -- the review would have matched it, so it was added since and may hold edits
+            IF existing_id IS NULL AND EXISTS (
+                SELECT 1 FROM opportunities WHERE title_key = entry ->> 'title_key'
+            ) THEN
+                RAISE EXCEPTION '"%" was added while this bulletin was being reviewed. Choose the PDF again to include it.', entry ->> 'title';
+            END IF;
 
             IF existing_id IS NOT NULL THEN
                 UPDATE opportunities SET
