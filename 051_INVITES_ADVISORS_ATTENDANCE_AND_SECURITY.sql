@@ -219,7 +219,14 @@ CREATE TRIGGER close_invites_on_join
 -- ADVISORS
 -- ====================================================================
 -- Advisors stay memberships with the ADVISOR role, but only faculty accounts
--- can be given it. Rows that already have it are left alone.
+-- can be given it.
+-- The old roster let leaders give students the Advisor role as a title; they
+-- become members and keep their title.
+UPDATE memberships m
+SET role = 'MEMBER'
+FROM users u
+WHERE u.id = m.user_id AND m.role = 'ADVISOR' AND NOT u.is_faculty;
+
 CREATE OR REPLACE FUNCTION public.enforce_faculty_advisor()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -751,8 +758,8 @@ BEGIN
     RETURN rec;
   END IF;
 
-  INSERT INTO public.attendance (organization_id, meeting_id, user_id, source, late)
-  SELECT mt.organization_id, p_meeting_id, caller_id, 'SELF',
+  INSERT INTO public.attendance (organization_id, meeting_id, user_id, late)
+  SELECT mt.organization_id, p_meeting_id, caller_id,
     now() > mt.start_time + make_interval(mins => o.late_after_minutes)
   FROM public.organizations o WHERE o.id = mt.organization_id
   RETURNING * INTO rec;
