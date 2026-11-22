@@ -3,6 +3,8 @@
 -- Reserve still can).
 -- Safe to re-run.
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.room_blocks (
   room_id INT NOT NULL REFERENCES rooms (id) ON DELETE CASCADE,
   blocked_on DATE NOT NULL,
@@ -38,9 +40,10 @@ USING (public.caller_is_site_admin())
 WITH CHECK (public.caller_is_site_admin());
 
 -- Blocks the rooms for the day (a New York date) and cancels their meetings
--- that haven't started yet (ones in progress keep their attendance). Rooms an admin club meets in that day are left
--- alone and returned as held. The cancelled meetings are returned so the
--- caller can email their clubs.
+-- that haven't started yet (ones in progress keep their attendance). Rooms
+-- already blocked that day keep their meetings, which only Force Reserve can
+-- have put there. The cancelled meetings are returned so the caller can email
+-- their clubs.
 CREATE OR REPLACE FUNCTION public.block_rooms(day DATE, room_ids INT[], reason TEXT DEFAULT NULL)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -51,8 +54,7 @@ DECLARE
   day_start TIMESTAMPTZ := day::timestamp AT TIME ZONE 'America/New_York';
   day_end TIMESTAMPTZ := (day + 1)::timestamp AT TIME ZONE 'America/New_York';
   note TEXT := nullif(left(btrim(coalesce(reason, '')), 500), '');
-  held INT[];
-  to_block INT[];
+  newly_blocked INT[];
   cancelled JSONB;
 BEGIN
   IF NOT public.caller_is_site_admin() THEN
@@ -74,31 +76,35 @@ BEGIN
     RAISE EXCEPTION 'Room not found.';
   END IF;
 
+  -- edits lock the meeting row before the room lock, so lock rows first too
+  -- (the other order can deadlock with an edit)
+  PERFORM 1 FROM meetings m
+  WHERE m.room_id = ANY (room_ids)
+    AND m.start_time < day_end
+    AND m.end_time > day_start
+    AND m.start_time > now()
+  ORDER BY m.id
+  FOR UPDATE;
+
   -- same lock as bookings, so a meeting can't be booked between the
   -- block and the cancellations
   PERFORM pg_advisory_xact_lock(hashtext('room-booking'), id)
   FROM (SELECT DISTINCT unnest(room_ids) AS id ORDER BY 1) AS r;
 
-  SELECT coalesce(array_agg(DISTINCT m.room_id), '{}') INTO held
-  FROM meetings m
-  JOIN organizations o ON o.id = m.organization_id
-  WHERE m.room_id = ANY (room_ids)
-    AND o.state = 'ADMIN'
-    AND m.start_time < day_end
-    AND m.end_time > day_start
-    AND m.start_time > now();
-
-  SELECT coalesce(array_agg(DISTINCT id), '{}') INTO to_block
-  FROM unnest(room_ids) AS id
-  WHERE NOT id = ANY (held);
+  SELECT coalesce(array_agg(DISTINCT r.id), '{}') INTO newly_blocked
+  FROM unnest(room_ids) AS r(id)
+  WHERE NOT EXISTS (
+    SELECT 1 FROM room_blocks b WHERE b.room_id = r.id AND b.blocked_on = day
+  );
 
   INSERT INTO room_blocks (room_id, blocked_on, reason)
-  SELECT id, day, note FROM unnest(to_block) AS id
-  ON CONFLICT (room_id, blocked_on) DO UPDATE SET reason = EXCLUDED.reason;
+  SELECT DISTINCT id, day, note FROM unnest(room_ids) AS id
+  ON CONFLICT (room_id, blocked_on)
+  DO UPDATE SET reason = coalesce(EXCLUDED.reason, room_blocks.reason);
 
   WITH removed AS (
     DELETE FROM meetings m
-    WHERE m.room_id = ANY (to_block)
+    WHERE m.room_id = ANY (newly_blocked)
       AND m.start_time < day_end
       AND m.end_time > day_start
       AND m.start_time > now()
@@ -115,8 +121,7 @@ BEGIN
   JOIN rooms r ON r.id = removed.room_id;
 
   RETURN jsonb_build_object(
-    'blocked', to_jsonb(to_block),
-    'held', to_jsonb(held),
+    'blocked', (SELECT to_jsonb(array_agg(DISTINCT id)) FROM unnest(room_ids) AS id),
     'cancelled', cancelled
   );
 END;
@@ -158,7 +163,8 @@ BEGIN
       AND b.blocked_on BETWEEN (NEW.start_time AT TIME ZONE 'America/New_York')::date
                            AND ((NEW.end_time - interval '1 microsecond') AT TIME ZONE 'America/New_York')::date
   ) THEN
-    RAISE EXCEPTION 'This room is blocked on that day.';
+    RAISE EXCEPTION 'This room is blocked on that day.'
+      USING ERRCODE = 'RB001';
   END IF;
 
   RETURN NEW;
@@ -170,4 +176,22 @@ CREATE TRIGGER check_room_block
 BEFORE INSERT OR UPDATE OF room_id, start_time, end_time ON public.meetings
 FOR EACH ROW EXECUTE FUNCTION public.check_room_block();
 
+-- Rooms are closed with blocks now, not with Epsilon Maintenance meetings, so
+-- its meetings highlight calendar days again like any club's (undoes 038).
+CREATE OR REPLACE FUNCTION get_unique_meeting_days(month INTEGER, year INTEGER) RETURNS INTEGER[] AS $$
+DECLARE
+    unique_meeting_days INTEGER[];
+BEGIN
+    SELECT ARRAY_AGG(DISTINCT EXTRACT(DAY FROM start_time AT TIME ZONE 'America/New_York')::INTEGER)
+    INTO unique_meeting_days
+    FROM public.meetings
+    WHERE EXTRACT(MONTH FROM start_time AT TIME ZONE 'America/New_York') = month
+      AND EXTRACT(YEAR FROM start_time AT TIME ZONE 'America/New_York') = year;
+
+    RETURN unique_meeting_days;
+END;
+$$ LANGUAGE plpgsql;
+
 NOTIFY pgrst, 'reload schema';
+
+COMMIT;
