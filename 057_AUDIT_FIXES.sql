@@ -1803,14 +1803,15 @@ GRANT EXECUTE ON FUNCTION public.set_calendar_hidden_clubs(integer[]) TO authent
 -- ====================================================================
 -- Attendance columns made outside the migrations
 -- ====================================================================
--- Prod already has these (the CSV reads recorded_at and source). Old rows
--- get their created_at as recorded_at, not the time this runs.
+-- Old rows get their created_at as recorded_at, not the time this runs, and
+-- no source: who marked them wasn't recorded.
 
 ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'PRESENT';
 ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS recorded_at timestamptz;
 UPDATE public.attendance SET recorded_at = created_at WHERE recorded_at IS NULL;
 ALTER TABLE public.attendance ALTER COLUMN recorded_at SET DEFAULT now();
-ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS source text DEFAULT 'SELF';
+ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS source text;
+ALTER TABLE public.attendance ALTER COLUMN source SET DEFAULT 'SELF';
 
 -- leaders' marks say so; members can't write rows
 GRANT INSERT (source), UPDATE (source) ON public.attendance TO authenticated;
