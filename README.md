@@ -28,14 +28,21 @@ deleted because someone thought it was a table.
 
 # Configuring the Database
 
-To set up your Supabase database with the current schema and database functions,
-execute all _**numbered**_ `.sql` files in the
-[Epsilon Database](https://github.com/stuysu/epsilon-database) repository, in
-numbered order, via the SQL query menu. (Hint: `cat 0*.sql` in most shells after cd-ing to a copy of this repository will
-allow you to copy all the SQL code in one operation).
+Run the _**numbered**_ `.sql` files in order, as `supabase_admin` (the Studio
+SQL editor runs as `postgres` and can't alter most tables). Some numbers are
+skipped on purpose; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Files are prefixed with a number indicating the order that they must be run on
-in order to ensure dependencies are satisfied,
+- Fresh local database: `DB_CONTAINER=<container> scripts/replay-migrations.sh`
+  applies every file, then `POPULATE_DATABASE.sql` (fake users and a test club).
+- One new file: `scripts/apply-migration.sh [--dry-run] NNN_NAME.sql`. It runs
+  the file in a transaction and records it in `public.schema_migrations`.
+- Start over locally:
+  `psql -U supabase_admin -v drop_everything=yes -f DROP_ALL_TABLES.sql`
+  (supabase_admin owns what the migrations create). It drops all of it and
+  refuses to run without that flag. Never run it on production.
+
+Production changes go database → functions → site. See CONTRIBUTING.md for
+the full process.
 
 # Environment Variables
 

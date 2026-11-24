@@ -1,28 +1,68 @@
-# Contributing Guide -- Epsilon Functions
+# Contributing Guide -- Epsilon Database
 
 At this time, StuySU IT is **not** accepting external contributions. The
 following documentation is meant for Directors.
 
-## Development Stack
+This repository is for schema, row-level security and database function
+changes. Edit row data through Epsilon or Studio instead.
 
-These SQL files are written in PL/pgSQL for the PostgresSQL server that Supabase
-serves as a wrapper for.
+## Rules
 
-## Editing Process
+- **Never edit a migration that has run on production.** Fix things in a new,
+  higher-numbered file. Applied files are listed in `public.schema_migrations`.
+  (Exception: 051 was edited once to write `auth.jwt()` for `jwt()`, which only
+  matters for replays; prod needs nothing.)
+- **One number, one file.** Take the next free number and say in your PR which
+  number you took, so parallel branches don't collide. CI fails on duplicates.
+- Make files safe to re-run where you can (`IF NOT EXISTS`, `CREATE OR REPLACE`,
+  `DROP POLICY IF EXISTS`).
+- Don't put `COMMIT`/`ROLLBACK` in the middle of a file. A `BEGIN;` at the top
+  and `COMMIT;` at the end are fine; the apply script replaces them with its own.
 
-If you are only editing or querying row data, do so via an Epsilon client or the
-Supabase dashboard. This repository is for schema, row-level security, and
-database function changes.
+## Numbering gaps
 
-1. Create a _**new**_ file and implement any breaking changes (to the schema,
-   RLS, etc.) that you are going to make.
-2. If your changes modify features of the database defined in previous files,
-   please take care to leave a comment on a new line adjacent to the obsoleted
-   code. This is the _**only**_ acceptable modification to existing files.
-3. Test your changes against a local Supabase instance by running the new SQL
-   code in the SQL Query menu (or similar). Ensure that database functions, edge
-   functions, and client interactions with the affected elements of the database
-   work correctly.
-4. Verify your changes one last time with `git diff`, then commit and push the
-   changes.
-5. Run your new, working, script, on the production server.
+- 043–046 were never merged on their own; that work was folded into 050 and 051.
+- 053 was dropped (obsolete).
+- 055 (SU Applications) and 056 (SU Votes) are reserved for branches that
+  haven't merged yet.
+
+## Making a change
+
+1. Write a new `NNN_SHORT_NAME.sql`.
+2. Try it on a local stack (see the site repo's `docs/local-setup.md`):
+
+   ```sh
+   scripts/apply-migration.sh --dry-run NNN_SHORT_NAME.sql   # runs, then ROLLBACK
+   scripts/apply-migration.sh NNN_SHORT_NAME.sql             # applies and records it
+   ```
+
+   Check that the site and functions that use the changed tables still work.
+3. Open a PR. CI replays every migration on a fresh Supabase Postgres and loads
+   `POPULATE_DATABASE.sql`, so broken SQL or a file that depends on something
+   only your local database has will fail there.
+
+## Applying to production
+
+Run everything as `supabase_admin`. The Studio SQL editor runs as `postgres`,
+which doesn't own most tables.
+
+`scripts/apply-migration.sh` wraps the file in one transaction, refuses if the
+version is already recorded, and records it in `public.schema_migrations` when
+it commits. `--dry-run` does the same but ends with `ROLLBACK`.
+
+```sh
+DB_SSH=<user>@<droplet> DB_CONTAINER=supabase-db \
+  scripts/apply-migration.sh --dry-run NNN_SHORT_NAME.sql
+DB_SSH=<user>@<droplet> DB_CONTAINER=supabase-db \
+  scripts/apply-migration.sh NNN_SHORT_NAME.sql
+```
+
+`DATABASE_URL=postgres://supabase_admin:...@host:5432/postgres` works instead
+of `DB_SSH`. Without either, the script targets the local container
+`supabase_db_localsb`.
+
+The first time, apply `057_AUDIT_FIXES.sql` this way. It creates the table
+and records 001–054 as already applied.
+
+Deploy order for a release: **database → functions → site**. See the site
+repo's `docs/release-checklist.md`.

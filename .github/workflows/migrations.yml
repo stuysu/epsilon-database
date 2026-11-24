@@ -1,0 +1,39 @@
+name: Migrations
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: migrations-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    replay:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v4
+            - name: Start a throwaway Supabase Postgres
+              run: |
+                  docker run -d --name replay -e POSTGRES_PASSWORD=postgres supabase/postgres:17.11.0.004
+                  for _ in $(seq 1 90); do
+                      docker exec replay pg_isready -h 127.0.0.1 -U postgres > /dev/null 2>&1 && exit 0
+                      sleep 2
+                  done
+                  docker logs replay
+                  exit 1
+            - name: Replay every migration in order
+              env:
+                  DB_CONTAINER: replay
+              run: scripts/replay-migrations.sh
+            - name: DROP_ALL_TABLES.sql leaves an empty schema that replays again
+              env:
+                  DB_CONTAINER: replay
+              run: |
+                  docker exec -i replay psql -X -q -v drop_everything=yes -U supabase_admin -d postgres < DROP_ALL_TABLES.sql
+                  scripts/replay-migrations.sh
