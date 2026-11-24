@@ -577,7 +577,7 @@ CREATE POLICY "Enable delete access to admins of organization" ON meetings
   USING ((EXISTS ( SELECT 1
    FROM (users u
      JOIN memberships m ON ((u.id = m.user_id)))
-  WHERE ((u.email = (jwt() ->> 'email'::text)) AND (m.organization_id = meetings.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))));
+  WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (m.organization_id = meetings.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))));
 
 DROP POLICY IF EXISTS "Enable all access to organization admins" ON attendance;
 CREATE POLICY "Enable all access to organization admins" ON attendance
@@ -585,11 +585,11 @@ CREATE POLICY "Enable all access to organization admins" ON attendance
   USING ((EXISTS ( SELECT 1
    FROM (users u
      JOIN memberships m ON ((u.id = m.user_id)))
-  WHERE ((u.email = (jwt() ->> 'email'::text)) AND (m.organization_id = attendance.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))))
+  WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (m.organization_id = attendance.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))))
   WITH CHECK (((EXISTS ( SELECT 1
    FROM (users u
      JOIN memberships m ON ((u.id = m.user_id)))
-  WHERE ((u.email = (jwt() ->> 'email'::text)) AND (m.organization_id = attendance.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))) AND (EXISTS ( SELECT 1
+  WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (m.organization_id = attendance.organization_id) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active))) AND (EXISTS ( SELECT 1
    FROM meetings mt
   WHERE ((mt.id = attendance.meeting_id) AND (mt.organization_id = attendance.organization_id)))) AND (EXISTS ( SELECT 1
    FROM memberships target
@@ -606,11 +606,11 @@ CREATE POLICY "Enable all access to organization admins only" ON posts
   USING ((EXISTS ( SELECT 1
    FROM (users u
      JOIN memberships m ON ((m.user_id = u.id)))
-  WHERE ((u.email = (jwt() ->> 'email'::text)) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active AND (m.organization_id = posts.organization_id)))))
+  WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active AND (m.organization_id = posts.organization_id)))))
   WITH CHECK ((EXISTS ( SELECT 1
    FROM (users u
      JOIN memberships m ON ((m.user_id = u.id)))
-  WHERE ((u.email = (jwt() ->> 'email'::text)) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active AND (m.organization_id = posts.organization_id)))));
+  WHERE ((u.email = (auth.jwt() ->> 'email'::text)) AND (m.role = ANY (ARRAY['ADMIN'::org_role, 'CREATOR'::org_role, 'ADVISOR'::org_role])) AND m.active AND (m.organization_id = posts.organization_id)))));
 
 -- ====================================================================
 -- CHARTER ADVISOR ON SIGNUP
