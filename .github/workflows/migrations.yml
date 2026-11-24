@@ -17,7 +17,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
             - name: Start a throwaway Supabase Postgres
               run: |
                   docker run -d --name replay -e POSTGRES_PASSWORD=postgres supabase/postgres:17.11.0.004
